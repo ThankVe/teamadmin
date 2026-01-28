@@ -123,29 +123,13 @@ export const AppSidebar = () => {
       'h-screen bg-sidebar border-r border-sidebar-border flex flex-col transition-all duration-300',
       collapsed ? 'w-20' : 'w-64'
     )}>
-      {/* Logo */}
-      <div className="p-4 border-b border-sidebar-border">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl gradient-pink flex items-center justify-center shadow-pink">
-            <Camera className="w-5 h-5 text-primary-foreground" />
-          </div>
-          {!collapsed && (
-            <div className="flex-1 min-w-0">
-              <h1 className="font-bold text-foreground truncate">
-                {settings?.site_name || 'โสตทัศนศึกษา'}
-              </h1>
-              <p className="text-xs text-muted-foreground">ระบบจัดการงาน</p>
-            </div>
-          )}
-        </div>
-      </div>
 
       {/* Toggle Button */}
       <Button
         variant="ghost"
         size="icon"
         onClick={() => setCollapsed(!collapsed)}
-        className="absolute top-20 -right-3 w-6 h-6 rounded-full bg-card border border-border shadow-md hover:bg-secondary z-10"
+        className="absolute top-4 -right-3 w-6 h-6 rounded-full bg-card border border-border shadow-md hover:bg-secondary z-10"
       >
         {collapsed ? (
           <ChevronRight className="w-3 h-3" />
