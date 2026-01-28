@@ -1,9 +1,10 @@
 import { useState, useMemo } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { EventList } from '@/components/events/EventList';
-import { useEvents } from '@/contexts/EventContext';
+import { useEventsData } from '@/hooks/useEvents';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
 const statusFilters = [
@@ -15,7 +16,7 @@ const statusFilters = [
 ];
 
 const Events = () => {
-  const { events } = useEvents();
+  const { events, isLoading } = useEventsData();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
@@ -29,7 +30,7 @@ const Events = () => {
           const query = searchQuery.toLowerCase();
           return (
             event.title.toLowerCase().includes(query) ||
-            event.activityName.toLowerCase().includes(query) ||
+            event.activity_name.toLowerCase().includes(query) ||
             event.location?.toLowerCase().includes(query)
           );
         }
@@ -37,6 +38,22 @@ const Events = () => {
       })
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [events, searchQuery, statusFilter]);
+
+  // Transform events for EventList
+  const transformedEvents = filteredEvents.map(event => ({
+    id: event.id,
+    title: event.title,
+    activityName: event.activity_name,
+    date: event.date,
+    startTime: event.start_time,
+    endTime: event.end_time,
+    location: event.location,
+    description: event.description,
+    photographers: event.photographers || [],
+    status: event.status as 'pending' | 'confirmed' | 'completed' | 'cancelled',
+    createdAt: event.created_at,
+    coverImage: event.cover_image_url,
+  }));
 
   return (
     <MainLayout onSearch={setSearchQuery}>
@@ -73,7 +90,13 @@ const Events = () => {
         </div>
 
         {/* Event List */}
-        <EventList events={filteredEvents} />
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[1, 2, 3].map(i => <Skeleton key={i} className="h-48" />)}
+          </div>
+        ) : (
+          <EventList events={transformedEvents} />
+        )}
       </div>
     </MainLayout>
   );

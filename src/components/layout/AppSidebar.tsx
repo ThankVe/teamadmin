@@ -13,7 +13,8 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useEvents } from '@/contexts/EventContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -72,7 +73,8 @@ const adminMenuItems = [
 export const AppSidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
-  const { settings, isAuthenticated, logout } = useEvents();
+  const { user, isAdmin, signOut } = useAuth();
+  const { settings } = useSiteSettings();
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -130,7 +132,7 @@ export const AppSidebar = () => {
           {!collapsed && (
             <div className="flex-1 min-w-0">
               <h1 className="font-bold text-foreground truncate">
-                {settings.siteName}
+                {settings?.site_name || 'โสตทัศนศึกษา'}
               </h1>
               <p className="text-xs text-muted-foreground">ระบบจัดการงาน</p>
             </div>
@@ -166,8 +168,8 @@ export const AppSidebar = () => {
           ))}
         </div>
 
-        {/* Admin Menu */}
-        {isAuthenticated && (
+        {/* Admin Menu - Show for logged in users */}
+        {user && (
           <div className="space-y-1 pt-4 mt-4 border-t border-sidebar-border">
             {!collapsed && (
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-4 mb-2">
@@ -183,10 +185,10 @@ export const AppSidebar = () => {
 
       {/* Footer */}
       <div className="p-4 border-t border-sidebar-border">
-        {isAuthenticated ? (
+        {user ? (
           <Button
             variant="ghost"
-            onClick={logout}
+            onClick={signOut}
             className={cn(
               'w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-destructive/10',
               collapsed && 'justify-center'

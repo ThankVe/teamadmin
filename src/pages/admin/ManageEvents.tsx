@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { useEvents } from '@/contexts/EventContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { useEventsData } from '@/hooks/useEvents';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -29,15 +30,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { useToast } from '@/hooks/use-toast';
 import {
   Camera,
-  Edit,
   MoreVertical,
   PlusCircle,
   Trash2,
   XCircle,
 } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const statusConfig = {
   pending: { label: 'รอดำเนินการ', variant: 'secondary' as const },
@@ -47,23 +47,30 @@ const statusConfig = {
 };
 
 const ManageEvents = () => {
-  const { events, deleteEvent, isAuthenticated } = useEvents();
+  const { user, isAdmin, isLoading: authLoading } = useAuth();
+  const { events, isLoading: eventsLoading, deleteEvent } = useEventsData();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (deleteId) {
-      deleteEvent(deleteId);
-      toast({
-        title: 'ลบงานสำเร็จ',
-        description: 'งานถูกลบออกจากระบบแล้ว',
-      });
+      await deleteEvent(deleteId);
       setDeleteId(null);
     }
   };
 
-  if (!isAuthenticated) {
+  if (authLoading || eventsLoading) {
+    return (
+      <MainLayout>
+        <div className="p-6 space-y-6">
+          <Skeleton className="h-12 w-48" />
+          <Skeleton className="h-96" />
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (!user || !isAdmin) {
     return (
       <MainLayout>
         <div className="flex items-center justify-center min-h-[60vh]">
@@ -74,7 +81,7 @@ const ManageEvents = () => {
               </div>
               <h2 className="text-xl font-semibold mb-2">ไม่มีสิทธิ์เข้าถึง</h2>
               <p className="text-muted-foreground">
-                กรุณาเข้าสู่ระบบเพื่อจัดการงาน
+                กรุณาเข้าสู่ระบบด้วยบัญชี Admin เพื่อจัดการงาน
               </p>
             </CardContent>
           </Card>
@@ -131,13 +138,13 @@ const ManageEvents = () => {
                     </TableRow>
                   ) : (
                     events.map((event) => {
-                      const status = statusConfig[event.status];
+                      const status = statusConfig[event.status as keyof typeof statusConfig] || statusConfig.pending;
                       return (
                         <TableRow key={event.id}>
                           <TableCell>
                             <div>
                               <p className="font-medium">{event.title}</p>
-                              <p className="text-sm text-muted-foreground">{event.activityName}</p>
+                              <p className="text-sm text-muted-foreground">{event.activity_name}</p>
                             </div>
                           </TableCell>
                           <TableCell>
@@ -148,19 +155,19 @@ const ManageEvents = () => {
                             })}
                           </TableCell>
                           <TableCell>
-                            {event.startTime} - {event.endTime}
+                            {event.start_time} - {event.end_time}
                           </TableCell>
                           <TableCell>{event.location || '-'}</TableCell>
                           <TableCell>
                             <div className="flex flex-wrap gap-1">
-                              {event.photographers.slice(0, 2).map((p) => (
+                              {(event.photographers || []).slice(0, 2).map((p) => (
                                 <Badge key={p.id} variant="secondary" className="text-xs">
                                   {p.name}
                                 </Badge>
                               ))}
-                              {event.photographers.length > 2 && (
+                              {(event.photographers?.length || 0) > 2 && (
                                 <Badge variant="secondary" className="text-xs">
-                                  +{event.photographers.length - 2}
+                                  +{(event.photographers?.length || 0) - 2}
                                 </Badge>
                               )}
                             </div>
@@ -176,10 +183,6 @@ const ManageEvents = () => {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuItem className="gap-2">
-                                  <Edit className="w-4 h-4" />
-                                  แก้ไข
-                                </DropdownMenuItem>
                                 <DropdownMenuItem
                                   className="gap-2 text-destructive focus:text-destructive"
                                   onClick={() => setDeleteId(event.id)}

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { useEvents } from '@/contexts/EventContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { useEventsData } from '@/hooks/useEvents';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -10,8 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Calendar, CheckCircle, Clock, XCircle, TrendingUp } from 'lucide-react';
-import { getEventsByMonth, getEventsStats } from '@/data/mockData';
+import { Calendar, CheckCircle, Clock, XCircle, TrendingUp, Camera } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const months = [
   'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
@@ -19,7 +20,9 @@ const months = [
 ];
 
 const Dashboard = () => {
-  const { events, isAuthenticated } = useEvents();
+  const { user, isLoading: authLoading } = useAuth();
+  const { events, isLoading: eventsLoading } = useEventsData();
+  
   const currentDate = new Date();
   const currentYear = currentDate.getFullYear();
   const currentMonth = currentDate.getMonth();
@@ -29,11 +32,29 @@ const Dashboard = () => {
 
   // Get events for selected month
   const monthlyEvents = useMemo(() => {
-    return getEventsByMonth(events, selectedYear, selectedMonth);
+    return events.filter(event => {
+      const eventDate = new Date(event.date);
+      return eventDate.getFullYear() === selectedYear && eventDate.getMonth() === selectedMonth;
+    });
   }, [events, selectedYear, selectedMonth]);
 
-  const stats = useMemo(() => getEventsStats(monthlyEvents), [monthlyEvents]);
-  const allStats = useMemo(() => getEventsStats(events), [events]);
+  const stats = useMemo(() => {
+    const total = monthlyEvents.length;
+    const pending = monthlyEvents.filter(e => e.status === 'pending').length;
+    const confirmed = monthlyEvents.filter(e => e.status === 'confirmed').length;
+    const completed = monthlyEvents.filter(e => e.status === 'completed').length;
+    const cancelled = monthlyEvents.filter(e => e.status === 'cancelled').length;
+    return { total, pending, confirmed, completed, cancelled };
+  }, [monthlyEvents]);
+
+  const allStats = useMemo(() => {
+    const total = events.length;
+    const pending = events.filter(e => e.status === 'pending').length;
+    const confirmed = events.filter(e => e.status === 'confirmed').length;
+    const completed = events.filter(e => e.status === 'completed').length;
+    const cancelled = events.filter(e => e.status === 'cancelled').length;
+    return { total, pending, confirmed, completed, cancelled };
+  }, [events]);
 
   const statCards = [
     {
@@ -47,15 +68,15 @@ const Dashboard = () => {
       title: 'รอดำเนินการ',
       value: stats.pending,
       icon: Clock,
-      color: 'text-warning',
-      bgColor: 'bg-warning/10',
+      color: 'text-yellow-600',
+      bgColor: 'bg-yellow-100',
     },
     {
       title: 'ยืนยันแล้ว',
       value: stats.confirmed,
-      icon: TrendingUp,
-      color: 'text-success',
-      bgColor: 'bg-success/10',
+      icon: Camera,
+      color: 'text-green-600',
+      bgColor: 'bg-green-100',
     },
     {
       title: 'เสร็จสิ้น',
@@ -77,7 +98,22 @@ const Dashboard = () => {
     return months;
   }, [selectedYear, currentYear, currentMonth]);
 
-  if (!isAuthenticated) {
+  if (authLoading || eventsLoading) {
+    return (
+      <MainLayout>
+        <div className="p-6 space-y-6">
+          <Skeleton className="h-12 w-48" />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map(i => (
+              <Skeleton key={i} className="h-32" />
+            ))}
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (!user) {
     return (
       <MainLayout>
         <div className="flex items-center justify-center min-h-[60vh]">
@@ -188,12 +224,12 @@ const Dashboard = () => {
                 <p className="text-3xl font-bold text-foreground">{allStats.total}</p>
                 <p className="text-sm text-muted-foreground">งานทั้งหมด</p>
               </div>
-              <div className="text-center p-4 rounded-xl bg-warning/10">
-                <p className="text-3xl font-bold text-warning">{allStats.pending}</p>
+              <div className="text-center p-4 rounded-xl bg-yellow-100">
+                <p className="text-3xl font-bold text-yellow-600">{allStats.pending}</p>
                 <p className="text-sm text-muted-foreground">รอดำเนินการ</p>
               </div>
-              <div className="text-center p-4 rounded-xl bg-success/10">
-                <p className="text-3xl font-bold text-success">{allStats.confirmed}</p>
+              <div className="text-center p-4 rounded-xl bg-green-100">
+                <p className="text-3xl font-bold text-green-600">{allStats.confirmed}</p>
                 <p className="text-sm text-muted-foreground">ยืนยันแล้ว</p>
               </div>
               <div className="text-center p-4 rounded-xl bg-muted">
@@ -231,7 +267,7 @@ const Dashboard = () => {
                         {new Date(event.date).toLocaleDateString('th-TH', {
                           day: 'numeric',
                           month: 'short',
-                        })} • {event.startTime} - {event.endTime}
+                        })} • {event.start_time} - {event.end_time}
                       </p>
                     </div>
                     <Badge variant={
