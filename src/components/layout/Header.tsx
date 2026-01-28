@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { useEvents } from '@/contexts/EventContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 interface HeaderProps {
@@ -20,13 +20,15 @@ interface HeaderProps {
 
 export const Header = ({ onSearch }: HeaderProps) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const { isAuthenticated, logout } = useEvents();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     onSearch?.(searchQuery);
   };
+
+  const userInitials = user?.email?.slice(0, 2).toUpperCase() || 'U';
 
   return (
     <header className="h-16 border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-40">
@@ -47,7 +49,7 @@ export const Header = ({ onSearch }: HeaderProps) => {
 
         {/* Right Side */}
         <div className="flex items-center gap-2">
-          {isAuthenticated && (
+          {user && (
             <Button
               variant="ghost"
               size="icon"
@@ -63,19 +65,19 @@ export const Header = ({ onSearch }: HeaderProps) => {
               <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                 <Avatar className="h-10 w-10 border-2 border-primary/20">
                   <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground">
-                    {isAuthenticated ? 'AD' : <User className="w-4 h-4" />}
+                    {user ? userInitials : <User className="w-4 h-4" />}
                   </AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" forceMount>
-              {isAuthenticated ? (
+              {user ? (
                 <>
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium">Admin</p>
+                      <p className="text-sm font-medium">บัญชีผู้ใช้</p>
                       <p className="text-xs text-muted-foreground">
-                        admin@example.com
+                        {user.email}
                       </p>
                     </div>
                   </DropdownMenuLabel>
@@ -88,7 +90,7 @@ export const Header = ({ onSearch }: HeaderProps) => {
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem 
-                    onClick={logout}
+                    onClick={signOut}
                     className="text-destructive focus:text-destructive"
                   >
                     ออกจากระบบ

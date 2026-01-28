@@ -1,7 +1,10 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { useEvents } from '@/contexts/EventContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { useTeamMembers } from '@/hooks/useTeamMembers';
+import { useEventsData } from '@/hooks/useEvents';
+import { useImageUpload } from '@/hooks/useImageUpload';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,59 +18,68 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useToast } from '@/hooks/use-toast';
-import { Calendar, Clock, MapPin, Users, XCircle, PlusCircle, Send } from 'lucide-react';
-import { EventItem } from '@/types/event';
+import { Calendar, Clock, MapPin, Users, XCircle, PlusCircle, Send, Upload, Loader2, Image as ImageIcon } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const AddEvent = () => {
-  const { team, addEvent, isAuthenticated } = useEvents();
+  const { user, isAdmin, isLoading: authLoading } = useAuth();
+  const { teamMembers, isLoading: teamLoading } = useTeamMembers();
+  const { addEvent } = useEventsData();
+  const { uploadImage, isUploading } = useImageUpload();
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const coverInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
     title: '',
-    activityName: '',
+    activity_name: '',
     date: '',
-    startTime: '',
-    endTime: '',
+    start_time: '',
+    end_time: '',
     location: '',
     description: '',
-    photographers: [] as string[],
-    status: 'pending' as EventItem['status'],
+    status: 'pending' as string,
+    cover_image_url: null as string | null,
   });
+  const [selectedPhotographers, setSelectedPhotographers] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
-    const selectedPhotographers = team.filter(member =>
-      formData.photographers.includes(member.id)
-    );
-
-    addEvent({
-      ...formData,
-      photographers: selectedPhotographers,
-    });
-
-    toast({
-      title: 'เพิ่มงานสำเร็จ',
-      description: 'งานใหม่ถูกเพิ่มเข้าระบบแล้ว',
-    });
-
-    // TODO: Send Telegram notification here
-
+    await addEvent(formData, selectedPhotographers);
     navigate('/admin/manage-events');
+    
+    setIsSubmitting(false);
   };
 
   const togglePhotographer = (id: string) => {
-    setFormData(prev => ({
-      ...prev,
-      photographers: prev.photographers.includes(id)
-        ? prev.photographers.filter(p => p !== id)
-        : [...prev.photographers, id],
-    }));
+    setSelectedPhotographers(prev =>
+      prev.includes(id)
+        ? prev.filter(p => p !== id)
+        : [...prev, id]
+    );
   };
 
-  if (!isAuthenticated) {
+  const handleCoverUpload = async (file: File) => {
+    const { url, error } = await uploadImage(file, 'event-covers');
+    if (!error && url) {
+      setFormData(prev => ({ ...prev, cover_image_url: url }));
+    }
+  };
+
+  if (authLoading || teamLoading) {
+    return (
+      <MainLayout>
+        <div className="p-6 max-w-3xl mx-auto space-y-6">
+          <Skeleton className="h-12 w-48" />
+          <Skeleton className="h-96" />
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (!user || !isAdmin) {
     return (
       <MainLayout>
         <div className="flex items-center justify-center min-h-[60vh]">
@@ -78,7 +90,7 @@ const AddEvent = () => {
               </div>
               <h2 className="text-xl font-semibold mb-2">ไม่มีสิทธิ์เข้าถึง</h2>
               <p className="text-muted-foreground">
-                กรุณาเข้าสู่ระบบเพื่อเพิ่มงาน
+                กรุณาเข้าสู่ระบบด้วยบัญชี Admin เพื่อเพิ่มงาน
               </p>
             </CardContent>
           </Card>
@@ -127,10 +139,51 @@ const AddEvent = () => {
                 <Input
                   id="activityName"
                   placeholder="เช่น ปฐมนิเทศ ประจำปีการศึกษา 2568"
-                  value={formData.activityName}
-                  onChange={(e) => setFormData({ ...formData, activityName: e.target.value })}
+                  value={formData.activity_name}
+                  onChange={(e) => setFormData({ ...formData, activity_name: e.target.value })}
                   required
                 />
+              </div>
+
+              {/* Cover Image */}
+              <div className="space-y-3">
+                <Label className="flex items-center gap-2">
+                  <ImageIcon className="w-4 h-4 text-primary" />
+                  รูปปกกิจกรรม
+                </Label>
+                {formData.cover_image_url && (
+                  <div className="relative w-full h-40 rounded-lg overflow-hidden border">
+                    <img
+                      src={formData.cover_image_url}
+                      alt="Cover"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+                <input
+                  ref={coverInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleCoverUpload(file);
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => coverInputRef.current?.click()}
+                  disabled={isUploading}
+                  className="gap-2"
+                >
+                  {isUploading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Upload className="w-4 h-4" />
+                  )}
+                  อัปโหลดรูปปก
+                </Button>
               </div>
 
               {/* Date & Time */}
@@ -156,8 +209,8 @@ const AddEvent = () => {
                   <Input
                     id="startTime"
                     type="time"
-                    value={formData.startTime}
-                    onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+                    value={formData.start_time}
+                    onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
                     required
                   />
                 </div>
@@ -169,8 +222,8 @@ const AddEvent = () => {
                   <Input
                     id="endTime"
                     type="time"
-                    value={formData.endTime}
-                    onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+                    value={formData.end_time}
+                    onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
                     required
                   />
                 </div>
@@ -207,7 +260,7 @@ const AddEvent = () => {
                 <Label>สถานะ</Label>
                 <Select
                   value={formData.status}
-                  onValueChange={(v) => setFormData({ ...formData, status: v as EventItem['status'] })}
+                  onValueChange={(v) => setFormData({ ...formData, status: v })}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -227,27 +280,33 @@ const AddEvent = () => {
                   <Users className="w-4 h-4 text-primary" />
                   ช่างภาพที่รับผิดชอบ
                 </Label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {team.map((member) => (
-                    <div
-                      key={member.id}
-                      className="flex items-center space-x-2 p-3 rounded-lg border border-border hover:border-primary/50 transition-colors cursor-pointer"
-                      onClick={() => togglePhotographer(member.id)}
-                    >
-                      <Checkbox
-                        id={`photographer-${member.id}`}
-                        checked={formData.photographers.includes(member.id)}
-                        onCheckedChange={() => togglePhotographer(member.id)}
-                      />
-                      <label
-                        htmlFor={`photographer-${member.id}`}
-                        className="text-sm cursor-pointer flex-1"
+                {teamMembers.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    ยังไม่มีทีมงาน กรุณาเพิ่มทีมงานก่อน
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {teamMembers.map((member) => (
+                      <div
+                        key={member.id}
+                        className="flex items-center space-x-2 p-3 rounded-lg border border-border hover:border-primary/50 transition-colors cursor-pointer"
+                        onClick={() => togglePhotographer(member.id)}
                       >
-                        {member.name}
-                      </label>
-                    </div>
-                  ))}
-                </div>
+                        <Checkbox
+                          id={`photographer-${member.id}`}
+                          checked={selectedPhotographers.includes(member.id)}
+                          onCheckedChange={() => togglePhotographer(member.id)}
+                        />
+                        <label
+                          htmlFor={`photographer-${member.id}`}
+                          className="text-sm cursor-pointer flex-1"
+                        >
+                          {member.name}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Submit */}
@@ -259,8 +318,16 @@ const AddEvent = () => {
                 >
                   ยกเลิก
                 </Button>
-                <Button type="submit" className="gradient-pink text-primary-foreground gap-2">
-                  <Send className="w-4 h-4" />
+                <Button 
+                  type="submit" 
+                  className="gradient-pink text-primary-foreground gap-2"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
                   เพิ่มงานและแจ้งเตือน
                 </Button>
               </div>
