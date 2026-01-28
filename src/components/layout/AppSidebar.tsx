@@ -10,7 +10,8 @@ import {
   Camera,
   Users,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  FolderOpen
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -54,6 +55,12 @@ const adminMenuItems = [
     title: 'จัดการงาน', 
     path: '/admin/manage-events', 
     icon: Camera,
+    requireAuth: true,
+  },
+  { 
+    title: 'ประเภทงาน', 
+    path: '/admin/categories', 
+    icon: FolderOpen,
     requireAuth: true,
   },
   { 

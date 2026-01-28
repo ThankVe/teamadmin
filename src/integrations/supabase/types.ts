@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      event_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          requirements: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          requirements?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          requirements?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       event_photographers: {
         Row: {
           created_at: string
@@ -53,14 +80,18 @@ export type Database = {
       events: {
         Row: {
           activity_name: string
+          additional_details: string | null
+          category_id: string | null
           cover_image_url: string | null
           created_at: string
           created_by: string | null
           date: string
           description: string | null
           end_time: string
+          equipment: string | null
           id: string
           location: string | null
+          shooting_focus: string | null
           start_time: string
           status: string
           title: string
@@ -68,14 +99,18 @@ export type Database = {
         }
         Insert: {
           activity_name: string
+          additional_details?: string | null
+          category_id?: string | null
           cover_image_url?: string | null
           created_at?: string
           created_by?: string | null
           date: string
           description?: string | null
           end_time: string
+          equipment?: string | null
           id?: string
           location?: string | null
+          shooting_focus?: string | null
           start_time: string
           status?: string
           title: string
@@ -83,20 +118,32 @@ export type Database = {
         }
         Update: {
           activity_name?: string
+          additional_details?: string | null
+          category_id?: string | null
           cover_image_url?: string | null
           created_at?: string
           created_by?: string | null
           date?: string
           description?: string | null
           end_time?: string
+          equipment?: string | null
           id?: string
           location?: string | null
+          shooting_focus?: string | null
           start_time?: string
           status?: string
           title?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "events_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "event_categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {

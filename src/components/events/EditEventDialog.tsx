@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
-import { format } from 'date-fns';
+import { useState, useEffect, useRef } from 'react';
 import { Event, EventInput } from '@/hooks/useEvents';
 import { useTeamMembers } from '@/hooks/useTeamMembers';
+import { useEventCategories } from '@/hooks/useEventCategories';
+import { useImageUpload } from '@/hooks/useImageUpload';
 import {
   Dialog,
   DialogContent,
@@ -23,7 +24,10 @@ import {
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Calendar, Clock, MapPin, Users, Loader2 } from 'lucide-react';
+import { 
+  Calendar, Clock, MapPin, Users, Loader2, Briefcase, 
+  Package, Camera, FileText, Upload, Image as ImageIcon 
+} from 'lucide-react';
 
 interface EditEventDialogProps {
   event: Event | null;
@@ -37,10 +41,9 @@ interface EditEventDialogProps {
 }
 
 const statusOptions = [
-  { value: 'pending', label: 'รอดำเนินการ' },
-  { value: 'confirmed', label: 'ยืนยันแล้ว' },
-  { value: 'completed', label: 'เสร็จสิ้น' },
-  { value: 'cancelled', label: 'ยกเลิก' },
+  { value: 'acknowledged', label: 'รับทราบงาน' },
+  { value: 'in_progress', label: 'ดำเนินงาน' },
+  { value: 'completed', label: 'เสร็จสิ้นงาน' },
 ];
 
 export const EditEventDialog = ({
@@ -50,7 +53,10 @@ export const EditEventDialog = ({
   onSave,
 }: EditEventDialogProps) => {
   const { teamMembers } = useTeamMembers();
+  const { categories } = useEventCategories();
+  const { uploadImage, isUploading } = useImageUpload();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const coverInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -60,9 +66,15 @@ export const EditEventDialog = ({
     end_time: '',
     location: '',
     description: '',
-    status: 'pending',
+    status: 'acknowledged',
+    category_id: null as string | null,
+    equipment: '',
+    shooting_focus: '',
+    additional_details: '',
+    cover_image_url: null as string | null,
   });
   const [selectedPhotographers, setSelectedPhotographers] = useState<string[]>([]);
+  const [coverImageLink, setCoverImageLink] = useState('');
 
   useEffect(() => {
     if (event) {
@@ -75,8 +87,14 @@ export const EditEventDialog = ({
         location: event.location || '',
         description: event.description || '',
         status: event.status,
+        category_id: event.category_id,
+        equipment: event.equipment || '',
+        shooting_focus: event.shooting_focus || '',
+        additional_details: event.additional_details || '',
+        cover_image_url: event.cover_image_url,
       });
       setSelectedPhotographers(event.photographers?.map((p) => p.id) || []);
+      setCoverImageLink('');
     }
   }, [event]);
 
@@ -96,7 +114,11 @@ export const EditEventDialog = ({
         location: formData.location || null,
         description: formData.description || null,
         status: formData.status,
-        cover_image_url: event.cover_image_url,
+        cover_image_url: formData.cover_image_url,
+        category_id: formData.category_id,
+        equipment: formData.equipment || null,
+        shooting_focus: formData.shooting_focus || null,
+        additional_details: formData.additional_details || null,
       },
       selectedPhotographers
     );
@@ -111,6 +133,21 @@ export const EditEventDialog = ({
     setSelectedPhotographers((prev) =>
       prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]
     );
+  };
+
+  const handleCoverUpload = async (file: File) => {
+    const { url, error } = await uploadImage(file, 'event-covers');
+    if (!error && url) {
+      setFormData(prev => ({ ...prev, cover_image_url: url }));
+      setCoverImageLink('');
+    }
+  };
+
+  const handleCoverLinkChange = (link: string) => {
+    setCoverImageLink(link);
+    if (link) {
+      setFormData(prev => ({ ...prev, cover_image_url: link }));
+    }
   };
 
   const activeMembers = teamMembers.filter((m) => m.is_active);
@@ -128,6 +165,29 @@ export const EditEventDialog = ({
         <form onSubmit={handleSubmit} className="flex-1 overflow-hidden flex flex-col">
           <ScrollArea className="flex-1 pr-4">
             <div className="space-y-4 pb-4">
+              {/* Category */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <Briefcase className="w-4 h-4" />
+                  ประเภทงาน
+                </Label>
+                <Select
+                  value={formData.category_id || ''}
+                  onValueChange={(v) => setFormData((prev) => ({ ...prev, category_id: v || null }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="เลือกประเภทงาน" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               {/* Title */}
               <div className="space-y-2">
                 <Label htmlFor="title">ชื่องาน *</Label>
@@ -154,6 +214,55 @@ export const EditEventDialog = ({
                     }))
                   }
                   required
+                />
+              </div>
+
+              {/* Cover Image */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <ImageIcon className="w-4 h-4" />
+                  รูปกิจกรรม
+                </Label>
+                {formData.cover_image_url && (
+                  <div className="relative w-full h-32 rounded-lg overflow-hidden border">
+                    <img
+                      src={formData.cover_image_url}
+                      alt="Cover"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+                <div className="flex gap-2">
+                  <input
+                    ref={coverInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleCoverUpload(file);
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => coverInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="gap-2"
+                  >
+                    {isUploading ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Upload className="w-4 h-4" />
+                    )}
+                    อัปโหลด
+                  </Button>
+                </div>
+                <Input
+                  placeholder="หรือใส่ลิงก์รูปภาพ"
+                  value={coverImageLink}
+                  onChange={(e) => handleCoverLinkChange(e.target.value)}
                 />
               </div>
 
@@ -230,6 +339,57 @@ export const EditEventDialog = ({
                 />
               </div>
 
+              {/* Equipment */}
+              <div className="space-y-2">
+                <Label htmlFor="equipment" className="flex items-center gap-2">
+                  <Package className="w-4 h-4" />
+                  อุปกรณ์ที่ต้องนำไป
+                </Label>
+                <Textarea
+                  id="equipment"
+                  value={formData.equipment}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, equipment: e.target.value }))
+                  }
+                  rows={2}
+                  placeholder="เช่น กล้อง DSLR, ขาตั้งกล้อง..."
+                />
+              </div>
+
+              {/* Shooting Focus */}
+              <div className="space-y-2">
+                <Label htmlFor="shooting_focus" className="flex items-center gap-2">
+                  <Camera className="w-4 h-4" />
+                  รายละเอียดงาน (สิ่งที่ต้องเน้น)
+                </Label>
+                <Textarea
+                  id="shooting_focus"
+                  value={formData.shooting_focus}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, shooting_focus: e.target.value }))
+                  }
+                  rows={2}
+                  placeholder="เช่น เน้นถ่ายเจ้าภาพงานเป็นหลัก..."
+                />
+              </div>
+
+              {/* Additional Details */}
+              <div className="space-y-2">
+                <Label htmlFor="additional_details" className="flex items-center gap-2">
+                  <FileText className="w-4 h-4" />
+                  รายละเอียดเพิ่มเติม
+                </Label>
+                <Textarea
+                  id="additional_details"
+                  value={formData.additional_details}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, additional_details: e.target.value }))
+                  }
+                  rows={2}
+                  placeholder="รายละเอียดเพิ่มเติม..."
+                />
+              </div>
+
               {/* Status */}
               <div className="space-y-2">
                 <Label>สถานะ</Label>
@@ -254,7 +414,7 @@ export const EditEventDialog = ({
 
               {/* Description */}
               <div className="space-y-2">
-                <Label htmlFor="description">รายละเอียด</Label>
+                <Label htmlFor="description">หมายเหตุ</Label>
                 <Textarea
                   id="description"
                   value={formData.description}
@@ -264,8 +424,8 @@ export const EditEventDialog = ({
                       description: e.target.value,
                     }))
                   }
-                  rows={3}
-                  placeholder="รายละเอียดเพิ่มเติม..."
+                  rows={2}
+                  placeholder="หมายเหตุอื่นๆ..."
                 />
               </div>
 
@@ -273,12 +433,12 @@ export const EditEventDialog = ({
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
                   <Users className="w-4 h-4" />
-                  ช่างภาพที่รับผิดชอบ
+                  ทีมงานที่รับผิดชอบ
                 </Label>
                 <div className="border rounded-md p-3 space-y-2 max-h-40 overflow-y-auto">
                   {activeMembers.length === 0 ? (
                     <p className="text-sm text-muted-foreground text-center py-2">
-                      ไม่มีช่างภาพในระบบ
+                      ไม่มีทีมงานในระบบ
                     </p>
                   ) : (
                     activeMembers.map((member) => (

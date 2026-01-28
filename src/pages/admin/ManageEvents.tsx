@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEventsData, Event } from '@/hooks/useEvents';
+import { useEventCategories } from '@/hooks/useEventCategories';
 import { EditEventDialog } from '@/components/events/EditEventDialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -32,28 +33,41 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   Camera,
   Edit,
   MoreVertical,
   PlusCircle,
   Trash2,
   XCircle,
+  Filter,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const statusConfig = {
+  acknowledged: { label: 'รับทราบงาน', variant: 'secondary' as const },
+  in_progress: { label: 'ดำเนินงาน', variant: 'default' as const },
+  completed: { label: 'เสร็จสิ้นงาน', variant: 'outline' as const },
+  // Legacy statuses for backward compatibility
   pending: { label: 'รอดำเนินการ', variant: 'secondary' as const },
   confirmed: { label: 'ยืนยันแล้ว', variant: 'default' as const },
-  completed: { label: 'เสร็จสิ้น', variant: 'outline' as const },
   cancelled: { label: 'ยกเลิก', variant: 'destructive' as const },
 };
 
 const ManageEvents = () => {
   const { user, isAdmin, isLoading: authLoading } = useAuth();
   const { events, isLoading: eventsLoading, deleteEvent, updateEvent } = useEventsData();
+  const { categories, isLoading: categoriesLoading } = useEventCategories();
   const navigate = useNavigate();
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  const [filterCategoryId, setFilterCategoryId] = useState<string>('all');
 
   const handleDelete = async () => {
     if (deleteId) {
@@ -62,7 +76,13 @@ const ManageEvents = () => {
     }
   };
 
-  if (authLoading || eventsLoading) {
+  const filteredEvents = filterCategoryId === 'all' 
+    ? events 
+    : events.filter(e => e.category_id === filterCategoryId);
+
+  const isLoading = authLoading || eventsLoading || categoriesLoading;
+
+  if (isLoading) {
     return (
       <MainLayout>
         <div className="p-6 space-y-6">
@@ -116,6 +136,36 @@ const ManageEvents = () => {
           </Button>
         </div>
 
+        {/* Filter */}
+        <div className="flex items-center gap-3">
+          <Filter className="w-4 h-4 text-muted-foreground" />
+          <Select
+            value={filterCategoryId}
+            onValueChange={setFilterCategoryId}
+          >
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="กรองตามประเภท" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">ทุกประเภท</SelectItem>
+              {categories.map((cat) => (
+                <SelectItem key={cat.id} value={cat.id}>
+                  {cat.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {filterCategoryId !== 'all' && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setFilterCategoryId('all')}
+            >
+              ล้างตัวกรอง
+            </Button>
+          )}
+        </div>
+
         {/* Table */}
         <Card>
           <CardContent className="p-0">
@@ -124,24 +174,25 @@ const ManageEvents = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>ชื่องาน</TableHead>
+                    <TableHead>ประเภท</TableHead>
                     <TableHead>วันที่</TableHead>
                     <TableHead>เวลา</TableHead>
                     <TableHead>สถานที่</TableHead>
-                    <TableHead>ช่างภาพ</TableHead>
+                    <TableHead>ทีมงาน</TableHead>
                     <TableHead>สถานะ</TableHead>
                     <TableHead className="w-12"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {events.length === 0 ? (
+                  {filteredEvents.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
-                        ยังไม่มีงาน
+                      <TableCell colSpan={8} className="text-center py-12 text-muted-foreground">
+                        {filterCategoryId === 'all' ? 'ยังไม่มีงาน' : 'ไม่พบงานในประเภทนี้'}
                       </TableCell>
                     </TableRow>
                   ) : (
-                    events.map((event) => {
-                      const status = statusConfig[event.status as keyof typeof statusConfig] || statusConfig.pending;
+                    filteredEvents.map((event) => {
+                      const status = statusConfig[event.status as keyof typeof statusConfig] || statusConfig.acknowledged;
                       return (
                         <TableRow key={event.id}>
                           <TableCell>
@@ -149,6 +200,13 @@ const ManageEvents = () => {
                               <p className="font-medium">{event.title}</p>
                               <p className="text-sm text-muted-foreground">{event.activity_name}</p>
                             </div>
+                          </TableCell>
+                          <TableCell>
+                            {event.category ? (
+                              <Badge variant="outline">{event.category.name}</Badge>
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
                           </TableCell>
                           <TableCell>
                             {new Date(event.date).toLocaleDateString('th-TH', {

@@ -22,6 +22,10 @@ export interface EventInput {
   description: string | null;
   cover_image_url: string | null;
   status: string;
+  category_id?: string | null;
+  equipment?: string | null;
+  shooting_focus?: string | null;
+  additional_details?: string | null;
 }
 
 export interface Event {
@@ -38,7 +42,12 @@ export interface Event {
   created_by: string | null;
   created_at: string;
   updated_at: string;
+  category_id: string | null;
+  equipment: string | null;
+  shooting_focus: string | null;
+  additional_details: string | null;
   photographers?: Array<{ id: string; name: string }>;
+  category?: { id: string; name: string; description: string | null; requirements: string | null } | null;
 }
 
 export const useEventsData = () => {
@@ -51,7 +60,7 @@ export const useEventsData = () => {
     try {
       const { data: eventsData, error: eventsError } = await supabase
         .from('events')
-        .select('*')
+        .select('*, event_categories(id, name, description, requirements)')
         .order('date', { ascending: true });
 
       if (eventsError) throw eventsError;
@@ -69,7 +78,10 @@ export const useEventsData = () => {
             name: p.team_members.name,
           }));
 
-          return { ...event, photographers };
+          const category = event.event_categories || null;
+          delete (event as any).event_categories;
+
+          return { ...event, photographers, category };
         })
       );
 
