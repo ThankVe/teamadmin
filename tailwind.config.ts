@@ -14,7 +14,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        prompt: ['Prompt', 'sans-serif'],
+        sans: ['IBM Plex Sans Thai', 'Space Grotesk', 'system-ui', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",

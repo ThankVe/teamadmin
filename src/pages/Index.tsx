@@ -75,13 +75,20 @@ const Index = () => {
                 alt="Hero Banner"
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-accent/60" />
+              <div className="absolute inset-0 bg-black/30" />
               <div className="absolute inset-0 flex items-center justify-center text-center p-6">
                 <div className="space-y-4 animate-slide-in-up">
-                  <h1 className="text-3xl md:text-5xl font-bold text-primary-foreground drop-shadow-lg">
+                  {settings?.logo_url && (
+                    <img 
+                      src={settings.logo_url} 
+                      alt="Logo" 
+                      className="w-20 h-20 md:w-24 md:h-24 mx-auto object-contain drop-shadow-lg"
+                    />
+                  )}
+                  <h1 className="text-3xl md:text-5xl font-bold text-white drop-shadow-lg">
                     {settings?.site_name || 'ทีมโสตทัศนศึกษา'}
                   </h1>
-                  <p className="text-lg md:text-xl text-primary-foreground/90 max-w-2xl">
+                  <p className="text-lg md:text-xl text-white/90 max-w-2xl">
                     {settings?.description || 'ระบบจัดการงานถ่ายภาพและวิดีโอ'}
                   </p>
                 </div>
