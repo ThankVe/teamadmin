@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { useNavigate } from 'react-router-dom';
 
 interface HeaderProps {
@@ -21,6 +22,7 @@ interface HeaderProps {
 export const Header = ({ onSearch }: HeaderProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const { user, signOut } = useAuth();
+  const { settings } = useSiteSettings();
   const navigate = useNavigate();
 
   const handleSearch = (e: React.FormEvent) => {
@@ -33,6 +35,23 @@ export const Header = ({ onSearch }: HeaderProps) => {
   return (
     <header className="h-16 border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-40">
       <div className="h-full px-6 flex items-center justify-between gap-4">
+        {/* Logo & Site Name */}
+        <div 
+          className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
+          onClick={() => navigate('/')}
+        >
+          {settings?.logo_url && (
+            <img 
+              src={settings.logo_url} 
+              alt="Logo" 
+              className="w-10 h-10 object-contain"
+            />
+          )}
+          <span className="font-semibold text-foreground hidden sm:block">
+            {settings?.site_name || 'โสตทัศนศึกษา'}
+          </span>
+        </div>
+
         {/* Search */}
         <form onSubmit={handleSearch} className="flex-1 max-w-xl">
           <div className="relative">
