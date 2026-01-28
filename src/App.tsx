@@ -12,6 +12,7 @@ import AddEvent from "./pages/admin/AddEvent";
 import ManageEvents from "./pages/admin/ManageEvents";
 import Team from "./pages/admin/Team";
 import Settings from "./pages/admin/Settings";
+import AdminSetup from "./pages/AdminSetup";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/setup" element={<AdminSetup />} />
             <Route path="/events" element={<Events />} />
             <Route path="/admin/dashboard" element={<Dashboard />} />
             <Route path="/admin/add-event" element={<AddEvent />} />
