@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { useAuth } from '@/contexts/AuthContext';
-import { useEventsData } from '@/hooks/useEvents';
+import { useEventsData, Event } from '@/hooks/useEvents';
+import { EditEventDialog } from '@/components/events/EditEventDialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -32,6 +33,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import {
   Camera,
+  Edit,
   MoreVertical,
   PlusCircle,
   Trash2,
@@ -48,9 +50,10 @@ const statusConfig = {
 
 const ManageEvents = () => {
   const { user, isAdmin, isLoading: authLoading } = useAuth();
-  const { events, isLoading: eventsLoading, deleteEvent } = useEventsData();
+  const { events, isLoading: eventsLoading, deleteEvent, updateEvent } = useEventsData();
   const navigate = useNavigate();
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
 
   const handleDelete = async () => {
     if (deleteId) {
@@ -184,6 +187,13 @@ const ManageEvents = () => {
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
                                 <DropdownMenuItem
+                                  className="gap-2"
+                                  onClick={() => setEditingEvent(event)}
+                                >
+                                  <Edit className="w-4 h-4" />
+                                  แก้ไข
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
                                   className="gap-2 text-destructive focus:text-destructive"
                                   onClick={() => setDeleteId(event.id)}
                                 >
@@ -223,6 +233,14 @@ const ManageEvents = () => {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* Edit Dialog */}
+        <EditEventDialog
+          event={editingEvent}
+          open={!!editingEvent}
+          onOpenChange={(open) => !open && setEditingEvent(null)}
+          onSave={updateEvent}
+        />
       </div>
     </MainLayout>
   );
