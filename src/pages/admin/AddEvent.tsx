@@ -4,6 +4,7 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTeamMembers } from '@/hooks/useTeamMembers';
 import { useEventsData } from '@/hooks/useEvents';
+import { useEventCategories } from '@/hooks/useEventCategories';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,12 +19,16 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Calendar, Clock, MapPin, Users, XCircle, PlusCircle, Send, Upload, Loader2, Image as ImageIcon } from 'lucide-react';
+import { 
+  Calendar, Clock, MapPin, Users, XCircle, PlusCircle, Send, Upload, Loader2, 
+  Image as ImageIcon, Briefcase, Camera, FileText, Package 
+} from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const AddEvent = () => {
   const { user, isAdmin, isLoading: authLoading } = useAuth();
   const { teamMembers, isLoading: teamLoading } = useTeamMembers();
+  const { categories, isLoading: categoriesLoading } = useEventCategories();
   const { addEvent } = useEventsData();
   const { uploadImage, isUploading } = useImageUpload();
   const navigate = useNavigate();
@@ -37,11 +42,16 @@ const AddEvent = () => {
     end_time: '',
     location: '',
     description: '',
-    status: 'pending' as string,
+    status: 'acknowledged' as string,
     cover_image_url: null as string | null,
+    category_id: null as string | null,
+    equipment: '',
+    shooting_focus: '',
+    additional_details: '',
   });
   const [selectedPhotographers, setSelectedPhotographers] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [coverImageLink, setCoverImageLink] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,10 +75,20 @@ const AddEvent = () => {
     const { url, error } = await uploadImage(file, 'event-covers');
     if (!error && url) {
       setFormData(prev => ({ ...prev, cover_image_url: url }));
+      setCoverImageLink('');
     }
   };
 
-  if (authLoading || teamLoading) {
+  const handleCoverLinkChange = (link: string) => {
+    setCoverImageLink(link);
+    if (link) {
+      setFormData(prev => ({ ...prev, cover_image_url: link }));
+    }
+  };
+
+  const isLoading = authLoading || teamLoading || categoriesLoading;
+
+  if (isLoading) {
     return (
       <MainLayout>
         <div className="p-6 max-w-3xl mx-auto space-y-6">
@@ -121,6 +141,35 @@ const AddEvent = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Category */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <Briefcase className="w-4 h-4 text-primary" />
+                  ประเภทงาน *
+                </Label>
+                <Select
+                  value={formData.category_id || ''}
+                  onValueChange={(v) => setFormData({ ...formData, category_id: v || null })}
+                  required
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="เลือกประเภทงาน" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {formData.category_id && (
+                  <p className="text-sm text-muted-foreground">
+                    {categories.find(c => c.id === formData.category_id)?.requirements}
+                  </p>
+                )}
+              </div>
+
               {/* Title */}
               <div className="space-y-2">
                 <Label htmlFor="title">ชื่องาน *</Label>
@@ -149,7 +198,7 @@ const AddEvent = () => {
               <div className="space-y-3">
                 <Label className="flex items-center gap-2">
                   <ImageIcon className="w-4 h-4 text-primary" />
-                  รูปปกกิจกรรม
+                  รูปกิจกรรม
                 </Label>
                 {formData.cover_image_url && (
                   <div className="relative w-full h-40 rounded-lg overflow-hidden border">
@@ -160,30 +209,41 @@ const AddEvent = () => {
                     />
                   </div>
                 )}
-                <input
-                  ref={coverInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) handleCoverUpload(file);
-                  }}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => coverInputRef.current?.click()}
-                  disabled={isUploading}
-                  className="gap-2"
-                >
-                  {isUploading ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <Upload className="w-4 h-4" />
-                  )}
-                  อัปโหลดรูปปก
-                </Button>
+                <div className="flex gap-2">
+                  <input
+                    ref={coverInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleCoverUpload(file);
+                    }}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => coverInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="gap-2"
+                  >
+                    {isUploading ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Upload className="w-4 h-4" />
+                    )}
+                    อัปโหลดรูป
+                  </Button>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="coverLink" className="text-sm text-muted-foreground">หรือใส่ลิงก์รูปภาพ</Label>
+                  <Input
+                    id="coverLink"
+                    placeholder="https://example.com/image.jpg"
+                    value={coverImageLink}
+                    onChange={(e) => handleCoverLinkChange(e.target.value)}
+                  />
+                </div>
               </div>
 
               {/* Date & Time */}
@@ -243,42 +303,79 @@ const AddEvent = () => {
                 />
               </div>
 
-              {/* Description */}
+              {/* Equipment */}
               <div className="space-y-2">
-                <Label htmlFor="description">รายละเอียดเพิ่มเติม</Label>
+                <Label htmlFor="equipment" className="flex items-center gap-2">
+                  <Package className="w-4 h-4 text-primary" />
+                  อุปกรณ์ที่ต้องนำไป
+                </Label>
                 <Textarea
-                  id="description"
-                  placeholder="รายละเอียดหรือหมายเหตุเพิ่มเติม..."
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  id="equipment"
+                  placeholder="เช่น กล้อง DSLR, ขาตั้งกล้อง, ไฟ LED..."
+                  value={formData.equipment}
+                  onChange={(e) => setFormData({ ...formData, equipment: e.target.value })}
+                  rows={2}
+                />
+              </div>
+
+              {/* Shooting Focus */}
+              <div className="space-y-2">
+                <Label htmlFor="shootingFocus" className="flex items-center gap-2">
+                  <Camera className="w-4 h-4 text-primary" />
+                  รายละเอียดงาน (สิ่งที่ต้องเน้น)
+                </Label>
+                <Textarea
+                  id="shootingFocus"
+                  placeholder="เช่น เน้นถ่ายเจ้าภาพงานเป็นหลัก, ถ่ายพิธีเปิด-ปิด, ถ่ายบรรยากาศผู้เข้าร่วม..."
+                  value={formData.shooting_focus}
+                  onChange={(e) => setFormData({ ...formData, shooting_focus: e.target.value })}
                   rows={3}
                 />
               </div>
 
-              {/* Status */}
+              {/* Additional Details */}
               <div className="space-y-2">
-                <Label>สถานะ</Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(v) => setFormData({ ...formData, status: v })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pending">รอดำเนินการ</SelectItem>
-                    <SelectItem value="confirmed">ยืนยันแล้ว</SelectItem>
-                    <SelectItem value="completed">เสร็จสิ้น</SelectItem>
-                    <SelectItem value="cancelled">ยกเลิก</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="additionalDetails" className="flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-primary" />
+                  รายละเอียดเพิ่มเติม
+                </Label>
+                <Textarea
+                  id="additionalDetails"
+                  placeholder="รายละเอียดหรือหมายเหตุเพิ่มเติม..."
+                  value={formData.additional_details}
+                  onChange={(e) => setFormData({ ...formData, additional_details: e.target.value })}
+                  rows={3}
+                />
+              </div>
+
+              {/* Description (legacy field) */}
+              <div className="space-y-2">
+                <Label htmlFor="description">หมายเหตุ</Label>
+                <Textarea
+                  id="description"
+                  placeholder="หมายเหตุอื่นๆ..."
+                  value={formData.description}
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  rows={2}
+                />
+              </div>
+
+              {/* Status - Fixed to acknowledged on create */}
+              <div className="space-y-2">
+                <Label>สถานะเริ่มต้น</Label>
+                <div className="p-3 bg-secondary/50 rounded-lg border">
+                  <span className="text-sm font-medium">รับทราบงาน</span>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    สถานะเริ่มต้นของงานใหม่จะเป็น "รับทราบงาน" เสมอ
+                  </p>
+                </div>
               </div>
 
               {/* Photographers */}
               <div className="space-y-3">
                 <Label className="flex items-center gap-2">
                   <Users className="w-4 h-4 text-primary" />
-                  ช่างภาพที่รับผิดชอบ
+                  ทีมงานที่รับผิดชอบ
                 </Label>
                 {teamMembers.length === 0 ? (
                   <p className="text-sm text-muted-foreground">
@@ -321,7 +418,7 @@ const AddEvent = () => {
                 <Button 
                   type="submit" 
                   className="gradient-pink text-primary-foreground gap-2"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !formData.category_id}
                 >
                   {isSubmitting ? (
                     <Loader2 className="w-4 h-4 animate-spin" />

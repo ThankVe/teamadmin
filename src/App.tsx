@@ -10,6 +10,7 @@ import Events from "./pages/Events";
 import Dashboard from "./pages/admin/Dashboard";
 import AddEvent from "./pages/admin/AddEvent";
 import ManageEvents from "./pages/admin/ManageEvents";
+import Categories from "./pages/admin/Categories";
 import Team from "./pages/admin/Team";
 import Settings from "./pages/admin/Settings";
 import AdminSetup from "./pages/AdminSetup";
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/admin/dashboard" element={<Dashboard />} />
             <Route path="/admin/add-event" element={<AddEvent />} />
             <Route path="/admin/manage-events" element={<ManageEvents />} />
+            <Route path="/admin/categories" element={<Categories />} />
             <Route path="/admin/team" element={<Team />} />
             <Route path="/admin/settings" element={<Settings />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
