@@ -14,16 +14,226 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      event_photographers: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          team_member_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          team_member_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          team_member_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_photographers_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_photographers_team_member_id_fkey"
+            columns: ["team_member_id"]
+            isOneToOne: false
+            referencedRelation: "team_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          activity_name: string
+          cover_image_url: string | null
+          created_at: string
+          created_by: string | null
+          date: string
+          description: string | null
+          end_time: string
+          id: string
+          location: string | null
+          start_time: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          activity_name: string
+          cover_image_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          date: string
+          description?: string | null
+          end_time: string
+          id?: string
+          location?: string | null
+          start_time: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          activity_name?: string
+          cover_image_url?: string | null
+          created_at?: string
+          created_by?: string | null
+          date?: string
+          description?: string | null
+          end_time?: string
+          id?: string
+          location?: string | null
+          start_time?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email: string
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      site_settings: {
+        Row: {
+          banner_url: string | null
+          created_at: string
+          description: string | null
+          id: string
+          login_background_url: string | null
+          logo_url: string | null
+          site_name: string
+          updated_at: string
+        }
+        Insert: {
+          banner_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          login_background_url?: string | null
+          logo_url?: string | null
+          site_name?: string
+          updated_at?: string
+        }
+        Update: {
+          banner_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          login_background_url?: string | null
+          logo_url?: string | null
+          site_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      team_members: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          phone: string | null
+          role: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          phone?: string | null
+          role?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          phone?: string | null
+          role?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_admin: { Args: never; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +360,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const
