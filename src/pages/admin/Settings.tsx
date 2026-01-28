@@ -3,19 +3,38 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { useImageUpload } from '@/hooks/useImageUpload';
+import { useTelegramGroups } from '@/hooks/useTelegramGroups';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Camera, Save, Settings as SettingsIcon, XCircle, Image as ImageIcon, Upload, Loader2, X } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Camera, Save, Settings as SettingsIcon, XCircle, Image as ImageIcon, Upload, Loader2, X, Bell, Plus, Trash2, Send } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 const Settings = () => {
   const { user, isAdmin, isLoading: authLoading } = useAuth();
   const { settings, isLoading: settingsLoading, updateSettings, refetch } = useSiteSettings();
   const { uploadImage, isUploading } = useImageUpload();
+  const { groups, isLoading: groupsLoading, addGroup, updateGroup, deleteGroup, testNotification } = useTelegramGroups();
   const [isSaving, setIsSaving] = useState(false);
+
+  // Telegram form
+  const [newGroupName, setNewGroupName] = useState('');
+  const [newGroupChatId, setNewGroupChatId] = useState('');
+  const [deleteGroupId, setDeleteGroupId] = useState<string | null>(null);
+  const [testingGroupId, setTestingGroupId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     site_name: '',
@@ -350,6 +369,131 @@ const Settings = () => {
           </CardContent>
         </Card>
 
+        {/* Telegram Notifications */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Bell className="w-5 h-5 text-primary" />
+              การแจ้งเตือน Telegram
+            </CardTitle>
+            <CardDescription>
+              จัดการกลุ่ม Telegram ที่จะได้รับการแจ้งเตือนเมื่อมีงานใหม่
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Add new group */}
+            <div className="p-4 border rounded-lg bg-muted/30 space-y-4">
+              <p className="text-sm font-medium">เพิ่มกลุ่มใหม่</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="groupName">ชื่อกลุ่ม</Label>
+                  <Input
+                    id="groupName"
+                    value={newGroupName}
+                    onChange={(e) => setNewGroupName(e.target.value)}
+                    placeholder="เช่น ทีมช่างภาพ"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="chatId">Chat ID</Label>
+                  <Input
+                    id="chatId"
+                    value={newGroupChatId}
+                    onChange={(e) => setNewGroupChatId(e.target.value)}
+                    placeholder="เช่น -1001234567890"
+                  />
+                </div>
+              </div>
+              <Button
+                onClick={async () => {
+                  if (newGroupName && newGroupChatId) {
+                    await addGroup(newGroupName, newGroupChatId);
+                    setNewGroupName('');
+                    setNewGroupChatId('');
+                  }
+                }}
+                disabled={!newGroupName || !newGroupChatId}
+                className="gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                เพิ่มกลุ่ม
+              </Button>
+            </div>
+
+            {/* Group list */}
+            {groupsLoading ? (
+              <div className="space-y-2">
+                <Skeleton className="h-16" />
+                <Skeleton className="h-16" />
+              </div>
+            ) : groups.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                ยังไม่มีกลุ่ม Telegram
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {groups.map((group) => (
+                  <div
+                    key={group.id}
+                    className="flex items-center justify-between p-4 border rounded-lg"
+                  >
+                    <div className="flex-1">
+                      <p className="font-medium">{group.name}</p>
+                      <p className="text-sm text-muted-foreground font-mono">
+                        {group.chat_id}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2">
+                        <Label htmlFor={`active-${group.id}`} className="text-sm">
+                          เปิดใช้งาน
+                        </Label>
+                        <Switch
+                          id={`active-${group.id}`}
+                          checked={group.is_active}
+                          onCheckedChange={(checked) => 
+                            updateGroup(group.id, { is_active: checked })
+                          }
+                        />
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={async () => {
+                          setTestingGroupId(group.id);
+                          await testNotification(group.chat_id);
+                          setTestingGroupId(null);
+                        }}
+                        disabled={testingGroupId === group.id}
+                        className="gap-1"
+                      >
+                        {testingGroupId === group.id ? (
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                        ) : (
+                          <Send className="w-3 h-3" />
+                        )}
+                        ทดสอบ
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setDeleteGroupId(group.id)}
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <p className="text-xs text-muted-foreground">
+              💡 วิธีหา Chat ID: เพิ่ม Bot เข้ากลุ่ม แล้วใช้ @userinfobot หรือ @getmyid_bot
+            </p>
+          </CardContent>
+        </Card>
+
         {/* Save Button */}
         <div className="flex justify-end">
           <Button 
@@ -365,6 +509,32 @@ const Settings = () => {
             บันทึกการตั้งค่า
           </Button>
         </div>
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={!!deleteGroupId} onOpenChange={() => setDeleteGroupId(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>ยืนยันการลบกลุ่ม?</AlertDialogTitle>
+              <AlertDialogDescription>
+                กลุ่มนี้จะไม่ได้รับการแจ้งเตือนอีกต่อไป
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>ยกเลิก</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={async () => {
+                  if (deleteGroupId) {
+                    await deleteGroup(deleteGroupId);
+                    setDeleteGroupId(null);
+                  }
+                }}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                ลบ
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </MainLayout>
   );

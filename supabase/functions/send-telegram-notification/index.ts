@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -14,6 +15,41 @@ interface EventData {
   location?: string;
 }
 
+interface RequestBody {
+  event: EventData;
+  test?: boolean;
+  chatId?: string;
+}
+
+const sendToTelegram = async (botToken: string, chatId: string, message: string): Promise<boolean> => {
+  try {
+    const telegramUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
+
+    const response = await fetch(telegramUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: message,
+        parse_mode: 'Markdown',
+      }),
+    });
+
+    const result = await response.json();
+    
+    if (!result.ok) {
+      console.error(`Telegram API error for chat ${chatId}:`, result.description);
+      return false;
+    }
+    
+    console.log(`Message sent successfully to chat ${chatId}`);
+    return true;
+  } catch (error) {
+    console.error(`Error sending to chat ${chatId}:`, error);
+    return false;
+  }
+};
+
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -22,20 +58,18 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const TELEGRAM_BOT_TOKEN = Deno.env.get('TELEGRAM_BOT_TOKEN');
-    const TELEGRAM_CHAT_ID = Deno.env.get('TELEGRAM_CHAT_ID');
+    const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
-    if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
-      console.log('Telegram credentials not configured');
+    if (!TELEGRAM_BOT_TOKEN) {
+      console.log('Telegram bot token not configured');
       return new Response(
-        JSON.stringify({ success: false, message: 'Telegram not configured' }),
-        { 
-          status: 200, 
-          headers: { 'Content-Type': 'application/json', ...corsHeaders } 
-        }
+        JSON.stringify({ success: false, message: 'Telegram bot token not configured' }),
+        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
       );
     }
 
-    const { event } = await req.json() as { event: EventData };
+    const { event, test, chatId } = await req.json() as RequestBody;
 
     // Format date in Thai
     const eventDate = new Date(event.date);
@@ -46,7 +80,14 @@ const handler = async (req: Request): Promise<Response> => {
       day: 'numeric',
     });
 
-    const message = `
+    const message = test 
+      ? `
+🔔 *ทดสอบการแจ้งเตือน*
+
+✅ การเชื่อมต่อสำเร็จ!
+📅 เวลา: ${new Date().toLocaleString('th-TH')}
+      `.trim()
+      : `
 🎬 *งานใหม่เข้าระบบ!*
 
 📌 *ชื่องาน:* ${event.title}
@@ -56,50 +97,75 @@ const handler = async (req: Request): Promise<Response> => {
 ${event.location ? `📍 *สถานที่:* ${event.location}` : ''}
 
 _กรุณาตรวจสอบและเตรียมตัวล่วงหน้า_
-    `.trim();
+      `.trim();
 
-    const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
-
-    const response = await fetch(telegramUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: TELEGRAM_CHAT_ID,
-        text: message,
-        parse_mode: 'Markdown',
-      }),
-    });
-
-    const result = await response.json();
-
-    if (!result.ok) {
-      console.error('Telegram API error:', result);
+    // If specific chatId provided (for testing), send only to that chat
+    if (test && chatId) {
+      const success = await sendToTelegram(TELEGRAM_BOT_TOKEN, chatId, message);
       return new Response(
-        JSON.stringify({ success: false, error: result.description }),
-        { 
-          status: 400, 
-          headers: { 'Content-Type': 'application/json', ...corsHeaders } 
-        }
+        JSON.stringify({ success }),
+        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
       );
     }
 
-    console.log('Telegram notification sent successfully');
+    // Fetch all active telegram groups from database
+    const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+    
+    const { data: groups, error: groupsError } = await supabase
+      .from('telegram_groups')
+      .select('chat_id, name')
+      .eq('is_active', true);
+
+    if (groupsError) {
+      console.error('Error fetching telegram groups:', groupsError);
+    }
+
+    // Also check legacy TELEGRAM_CHAT_ID for backward compatibility
+    const legacyChatId = Deno.env.get('TELEGRAM_CHAT_ID');
+    
+    const chatIds: string[] = [];
+    
+    // Add groups from database
+    if (groups && groups.length > 0) {
+      chatIds.push(...groups.map(g => g.chat_id));
+      console.log(`Found ${groups.length} active telegram groups`);
+    }
+    
+    // Add legacy chat ID if exists and not already in list
+    if (legacyChatId && !chatIds.includes(legacyChatId)) {
+      chatIds.push(legacyChatId);
+      console.log('Added legacy TELEGRAM_CHAT_ID');
+    }
+
+    if (chatIds.length === 0) {
+      console.log('No telegram groups configured');
+      return new Response(
+        JSON.stringify({ success: false, message: 'No telegram groups configured' }),
+        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+      );
+    }
+
+    // Send to all groups
+    const results = await Promise.all(
+      chatIds.map(id => sendToTelegram(TELEGRAM_BOT_TOKEN, id, message))
+    );
+
+    const successCount = results.filter(r => r).length;
+    console.log(`Telegram notifications sent: ${successCount}/${chatIds.length}`);
 
     return new Response(
-      JSON.stringify({ success: true }),
-      { 
-        status: 200, 
-        headers: { 'Content-Type': 'application/json', ...corsHeaders } 
-      }
+      JSON.stringify({ 
+        success: successCount > 0,
+        sent: successCount,
+        total: chatIds.length,
+      }),
+      { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
     );
   } catch (error: any) {
     console.error('Error in send-telegram-notification:', error);
     return new Response(
       JSON.stringify({ success: false, error: error.message }),
-      { 
-        status: 500, 
-        headers: { 'Content-Type': 'application/json', ...corsHeaders } 
-      }
+      { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
     );
   }
 };
