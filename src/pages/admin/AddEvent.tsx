@@ -149,8 +149,13 @@ const AddEvent = () => {
                 </Label>
                 <Select
                   value={formData.category_id || ""}
-                  onValueChange={(v) => setFormData(prev => ({ ...prev, category_id: v || null }))}
-                  key="category-select"
+                  onValueChange={(v) =>
+                    setFormData((prev) => {
+                      const next = v || null;
+                      if (prev.category_id === next) return prev;
+                      return { ...prev, category_id: next };
+                    })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="เลือกประเภทงาน" />
