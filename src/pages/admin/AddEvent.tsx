@@ -148,9 +148,8 @@ const AddEvent = () => {
                   ประเภทงาน *
                 </Label>
                 <Select
-                  value={formData.category_id || ''}
-                  onValueChange={(v) => setFormData({ ...formData, category_id: v || null })}
-                  required
+                  value={formData.category_id ?? undefined}
+                  onValueChange={(v) => setFormData(prev => ({ ...prev, category_id: v }))}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="เลือกประเภทงาน" />
