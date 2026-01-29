@@ -172,8 +172,9 @@ export const EditEventDialog = ({
                   ประเภทงาน
                 </Label>
                 <Select
-                  value={formData.category_id ?? undefined}
-                  onValueChange={(v) => setFormData((prev) => ({ ...prev, category_id: v }))}
+                  value={formData.category_id || ""}
+                  onValueChange={(v) => setFormData((prev) => ({ ...prev, category_id: v || null }))}
+                  key="category-select"
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="เลือกประเภทงาน" />
