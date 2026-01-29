@@ -167,32 +167,23 @@ export const EditEventDialog = ({
             <div className="space-y-4 pb-4">
               {/* Category */}
               <div className="space-y-2">
-                <Label className="flex items-center gap-2">
+                <Label htmlFor="edit-category" className="flex items-center gap-2">
                   <Briefcase className="w-4 h-4" />
                   ประเภทงาน
                 </Label>
-                <Select
-                  key={event?.id ?? 'no-event'}
-                  defaultValue={formData.category_id ?? undefined}
-                  onValueChange={(v) =>
-                    setFormData((prev) => {
-                      const next = v;
-                      if (prev.category_id === next) return prev;
-                      return { ...prev, category_id: next };
-                    })
-                  }
+                <select
+                  id="edit-category"
+                  value={formData.category_id || ''}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, category_id: e.target.value || null }))}
+                  className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="เลือกประเภทงาน" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id}>
-                        {cat.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  <option value="">เลือกประเภทงาน</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Title */}
