@@ -148,10 +148,10 @@ const AddEvent = () => {
                   ประเภทงาน *
                 </Label>
                 <Select
-                  value={formData.category_id || ""}
+                  defaultValue={formData.category_id ?? undefined}
                   onValueChange={(v) =>
                     setFormData((prev) => {
-                      const next = v || null;
+                      const next = v;
                       if (prev.category_id === next) return prev;
                       return { ...prev, category_id: next };
                     })
