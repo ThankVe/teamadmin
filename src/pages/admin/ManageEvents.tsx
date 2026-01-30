@@ -33,13 +33,6 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
   Camera,
   Edit,
   MoreVertical,
@@ -139,22 +132,18 @@ const ManageEvents = () => {
         {/* Filter */}
         <div className="flex items-center gap-3">
           <Filter className="w-4 h-4 text-muted-foreground" />
-          <Select
+          <select
             value={filterCategoryId}
-            onValueChange={setFilterCategoryId}
+            onChange={(e) => setFilterCategoryId(e.target.value)}
+            className="h-10 w-[200px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
           >
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="กรองตามประเภท" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">ทุกประเภท</SelectItem>
-              {categories.map((cat) => (
-                <SelectItem key={cat.id} value={cat.id}>
-                  {cat.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            <option value="all">ทุกประเภท</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.name}
+              </option>
+            ))}
+          </select>
           {filterCategoryId !== 'all' && (
             <Button
               variant="ghost"

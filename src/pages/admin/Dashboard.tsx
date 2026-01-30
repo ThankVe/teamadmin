@@ -4,13 +4,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useEventsData } from '@/hooks/useEvents';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Calendar, CheckCircle, Clock, XCircle, TrendingUp, Camera } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -147,47 +140,40 @@ const Dashboard = () => {
 
           {/* Month Filter */}
           <div className="flex items-center gap-3">
-            <Select
+            <select
               value={selectedMonth.toString()}
-              onValueChange={(v) => setSelectedMonth(parseInt(v))}
+              onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+              className="h-10 w-36 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
             >
-              <SelectTrigger className="w-36">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {availableMonths.map((month, index) => {
-                  const monthIndex = selectedYear === currentYear ? currentMonth + index : index;
-                  return (
-                    <SelectItem key={monthIndex} value={monthIndex.toString()}>
-                      {month}
-                    </SelectItem>
-                  );
-                })}
-              </SelectContent>
-            </Select>
+              {availableMonths.map((month, index) => {
+                const monthIndex = selectedYear === currentYear ? currentMonth + index : index;
+                return (
+                  <option key={monthIndex} value={monthIndex.toString()}>
+                    {month}
+                  </option>
+                );
+              })}
+            </select>
 
-            <Select
+            <select
               value={selectedYear.toString()}
-              onValueChange={(v) => {
-                setSelectedYear(parseInt(v));
-                if (parseInt(v) !== currentYear) {
+              onChange={(e) => {
+                const year = parseInt(e.target.value);
+                setSelectedYear(year);
+                if (year !== currentYear) {
                   setSelectedMonth(0);
                 } else {
                   setSelectedMonth(currentMonth);
                 }
               }}
+              className="h-10 w-24 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
             >
-              <SelectTrigger className="w-24">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {years.map((year) => (
-                  <SelectItem key={year} value={year.toString()}>
-                    {year + 543}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              {years.map((year) => (
+                <option key={year} value={year.toString()}>
+                  {year + 543}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
