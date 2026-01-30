@@ -11,13 +11,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { 
   Calendar, Clock, MapPin, Users, XCircle, PlusCircle, Send, Upload, Loader2, 
@@ -57,10 +50,14 @@ const AddEvent = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    await addEvent(formData, selectedPhotographers);
-    navigate('/admin/manage-events');
-    
-    setIsSubmitting(false);
+    try {
+      const result = await addEvent(formData, selectedPhotographers);
+      if (!result.error) {
+        navigate('/admin/manage-events');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const togglePhotographer = (id: string) => {
