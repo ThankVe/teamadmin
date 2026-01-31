@@ -10,11 +10,13 @@ interface EventCardProps {
   onClick?: () => void;
 }
 
-const statusConfig = {
-  pending: { label: 'รอดำเนินการ', variant: 'secondary' as const },
-  confirmed: { label: 'ยืนยันแล้ว', variant: 'default' as const },
-  completed: { label: 'เสร็จสิ้น', variant: 'outline' as const },
-  cancelled: { label: 'ยกเลิก', variant: 'destructive' as const },
+const statusConfig: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' | 'destructive' }> = {
+  acknowledged: { label: 'รับทราบ', variant: 'secondary' },
+  pending: { label: 'รอดำเนินการ', variant: 'secondary' },
+  confirmed: { label: 'ยืนยันแล้ว', variant: 'default' },
+  in_progress: { label: 'กำลังดำเนินงาน', variant: 'default' },
+  completed: { label: 'เสร็จสิ้น', variant: 'outline' },
+  cancelled: { label: 'ยกเลิก', variant: 'destructive' },
 };
 
 export const EventCard = ({ event, onClick }: EventCardProps) => {
