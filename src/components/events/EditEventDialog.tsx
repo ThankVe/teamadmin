@@ -3,6 +3,7 @@ import { Event, EventInput } from '@/hooks/useEvents';
 import { useTeamMembers } from '@/hooks/useTeamMembers';
 import { useEventCategories } from '@/hooks/useEventCategories';
 import { useImageUpload } from '@/hooks/useImageUpload';
+import { supabase } from '@/integrations/supabase/client';
 import {
   Dialog,
   DialogContent,
@@ -16,11 +17,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { Switch } from '@/components/ui/switch';
 import { 
   Calendar, Clock, MapPin, Users, Loader2, Briefcase, 
-  Package, Camera, FileText, Upload, Image as ImageIcon 
+  Package, Camera, FileText, Upload, Image as ImageIcon, Bell 
 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface EditEventDialogProps {
   event: Event | null;
@@ -48,7 +50,10 @@ export const EditEventDialog = ({
   const { teamMembers } = useTeamMembers();
   const { categories } = useEventCategories();
   const { uploadImage, isUploading } = useImageUpload();
+  const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [sendTelegramNotification, setSendTelegramNotification] = useState(false);
+  const [originalStatus, setOriginalStatus] = useState('');
   const coverInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
@@ -88,6 +93,8 @@ export const EditEventDialog = ({
       });
       setSelectedPhotographers(event.photographers?.map((p) => p.id) || []);
       setCoverImageLink('');
+      setOriginalStatus(event.status);
+      setSendTelegramNotification(false);
     }
   }, [event]);
 
@@ -115,6 +122,47 @@ export const EditEventDialog = ({
       },
       selectedPhotographers
     );
+
+    // Send Telegram notification if status changed and toggle is on
+    if (!result.error && sendTelegramNotification && formData.status !== originalStatus) {
+      try {
+        const statusLabels: Record<string, string> = {
+          acknowledged: 'รับทราบงาน',
+          in_progress: 'ดำเนินงาน',
+          completed: 'เสร็จสิ้นงาน',
+        };
+
+        await supabase.functions.invoke('send-telegram-notification', {
+          body: {
+            event: {
+              title: formData.title,
+              activity_name: formData.activity_name,
+              date: formData.date,
+              start_time: formData.start_time,
+              end_time: formData.end_time,
+              location: formData.location,
+            },
+            statusUpdate: {
+              oldStatus: statusLabels[originalStatus] || originalStatus,
+              newStatus: statusLabels[formData.status] || formData.status,
+            },
+          },
+        });
+        
+        toast({
+          title: 'ส่งแจ้งเตือนสำเร็จ',
+          description: 'แจ้งเตือนสถานะงานไปยัง Telegram แล้ว',
+        });
+      } catch (telegramError) {
+        console.error('Error sending Telegram notification:', telegramError);
+        toast({
+          title: 'ไม่สามารถส่งแจ้งเตือนได้',
+          description: 'เกิดข้อผิดพลาดในการส่ง Telegram',
+          variant: 'destructive',
+        });
+      }
+    }
+
     setIsSubmitting(false);
 
     if (!result.error) {
@@ -190,6 +238,24 @@ export const EditEventDialog = ({
                       <span className="font-medium text-sm">{option.label}</span>
                     </button>
                   ))}
+                </div>
+                
+                {/* Telegram Notification Toggle */}
+                <div className="flex items-center justify-between p-3 rounded-lg border bg-muted/30">
+                  <div className="flex items-center gap-2">
+                    <Bell className="w-4 h-4 text-primary" />
+                    <div>
+                      <p className="text-sm font-medium">แจ้งเตือน Telegram</p>
+                      <p className="text-xs text-muted-foreground">
+                        ส่งแจ้งเตือนเมื่อเปลี่ยนสถานะงาน
+                      </p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={sendTelegramNotification}
+                    onCheckedChange={setSendTelegramNotification}
+                    disabled={formData.status === originalStatus}
+                  />
                 </div>
               </div>
 

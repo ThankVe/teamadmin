@@ -14,6 +14,8 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { useNavigate } from 'react-router-dom';
+import { MobileMenu } from './MobileMenu';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface HeaderProps {
   onSearch?: (query: string) => void;
@@ -21,9 +23,10 @@ interface HeaderProps {
 
 export const Header = ({ onSearch }: HeaderProps) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const { user, signOut } = useAuth();
+  const { user, isAdmin, signOut } = useAuth();
   const { settings } = useSiteSettings();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,57 +36,60 @@ export const Header = ({ onSearch }: HeaderProps) => {
   const userInitials = user?.email?.slice(0, 2).toUpperCase() || 'U';
 
   return (
-    <header className="h-16 border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-40">
-      <div className="h-full px-6 flex items-center justify-between gap-4">
+    <header className="h-14 md:h-16 border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-40">
+      <div className="h-full px-4 md:px-6 flex items-center justify-between gap-2 md:gap-4">
+        {/* Mobile Menu */}
+        <MobileMenu />
+
         {/* Logo & Site Name */}
         <div 
-          className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
+          className="flex items-center gap-2 md:gap-3 cursor-pointer hover:opacity-80 transition-opacity"
           onClick={() => navigate('/')}
         >
           {settings?.logo_url && (
             <img 
               src={settings.logo_url} 
               alt="Logo" 
-              className="w-10 h-10 object-contain"
+              className="w-8 h-8 md:w-10 md:h-10 object-contain"
             />
           )}
-          <span className="font-semibold text-foreground hidden sm:block">
+          <span className="font-semibold text-foreground hidden sm:block text-sm md:text-base">
             {settings?.site_name || 'โสตทัศนศึกษา'}
           </span>
         </div>
 
         {/* Search */}
-        <form onSubmit={handleSearch} className="flex-1 max-w-xl">
+        <form onSubmit={handleSearch} className="flex-1 max-w-md md:max-w-xl">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               type="text"
-              placeholder="ค้นหากิจกรรม..."
+              placeholder={isMobile ? "ค้นหา..." : "ค้นหากิจกรรม..."}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-background border-input focus:border-primary focus:ring-primary/20"
+              className="pl-9 md:pl-10 bg-background border-input focus:border-primary focus:ring-primary/20 h-9 md:h-10 text-sm"
             />
           </div>
         </form>
 
         {/* Right Side */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 md:gap-2">
           {user && (
             <Button
               variant="ghost"
               size="icon"
-              className="relative"
+              className="relative h-9 w-9 md:h-10 md:w-10"
             >
-              <Bell className="w-5 h-5" />
+              <Bell className="w-4 h-4 md:w-5 md:h-5" />
               <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full" />
             </Button>
           )}
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                <Avatar className="h-10 w-10 border-2 border-primary/20">
-                  <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground">
+              <Button variant="ghost" className="relative h-9 w-9 md:h-10 md:w-10 rounded-full p-0">
+                <Avatar className="h-8 w-8 md:h-9 md:w-9 border-2 border-primary/20">
+                  <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground text-sm">
                     {user ? userInitials : <User className="w-4 h-4" />}
                   </AvatarFallback>
                 </Avatar>
@@ -95,18 +101,30 @@ export const Header = ({ onSearch }: HeaderProps) => {
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium">บัญชีผู้ใช้</p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-muted-foreground truncate max-w-[180px]">
                         {user.email}
                       </p>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => navigate('/admin/dashboard')}>
-                    Dashboard
+                  <DropdownMenuItem onClick={() => navigate('/profile')}>
+                    โปรไฟล์
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/admin/settings')}>
-                    ตั้งค่า
-                  </DropdownMenuItem>
+                  {isAdmin && (
+                    <>
+                      <DropdownMenuItem onClick={() => navigate('/admin/dashboard')}>
+                        Dashboard
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate('/admin/settings')}>
+                        ตั้งค่า
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  {!isAdmin && (
+                    <DropdownMenuItem onClick={() => navigate('/my-jobs')}>
+                      งานของฉัน
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem 
                     onClick={signOut}

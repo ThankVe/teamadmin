@@ -15,10 +15,16 @@ interface EventData {
   location?: string;
 }
 
+interface StatusUpdate {
+  oldStatus: string;
+  newStatus: string;
+}
+
 interface RequestBody {
   event: EventData;
   test?: boolean;
   chatId?: string;
+  statusUpdate?: StatusUpdate;
 }
 
 const sendToTelegram = async (botToken: string, chatId: string, message: string): Promise<boolean> => {
@@ -69,7 +75,7 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    const { event, test, chatId } = await req.json() as RequestBody;
+    const { event, test, chatId, statusUpdate } = await req.json() as RequestBody;
 
     // Format date in Thai
     const eventDate = new Date(event.date);
@@ -80,14 +86,31 @@ const handler = async (req: Request): Promise<Response> => {
       day: 'numeric',
     });
 
-    const message = test 
-      ? `
+    let message: string;
+
+    if (test) {
+      message = `
 🔔 *ทดสอบการแจ้งเตือน*
 
 ✅ การเชื่อมต่อสำเร็จ!
 📅 เวลา: ${new Date().toLocaleString('th-TH')}
-      `.trim()
-      : `
+      `.trim();
+    } else if (statusUpdate) {
+      // Status update notification
+      message = `
+🔄 *อัปเดตสถานะงาน*
+
+📌 *ชื่องาน:* ${event.title}
+🎯 *กิจกรรม:* ${event.activity_name}
+📅 *วันที่:* ${formattedDate}
+⏰ *เวลา:* ${event.start_time} - ${event.end_time}
+${event.location ? `📍 *สถานที่:* ${event.location}` : ''}
+
+📊 *สถานะ:* ${statusUpdate.oldStatus} → *${statusUpdate.newStatus}*
+      `.trim();
+    } else {
+      // New event notification
+      message = `
 🎬 *งานใหม่เข้าระบบ!*
 
 📌 *ชื่องาน:* ${event.title}
@@ -98,6 +121,7 @@ ${event.location ? `📍 *สถานที่:* ${event.location}` : ''}
 
 _กรุณาตรวจสอบและเตรียมตัวล่วงหน้า_
       `.trim();
+    }
 
     // If specific chatId provided (for testing), send only to that chat
     if (test && chatId) {
