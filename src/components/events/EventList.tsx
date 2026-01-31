@@ -29,7 +29,7 @@ export const EventList = ({ events, onEventClick }: EventListProps) => {
         <EventCard
           key={event.id}
           event={event}
-          onClick={() => onEventClick?.(event)}
+          onClick={onEventClick ? () => onEventClick(event) : undefined}
         />
       ))}
     </div>
