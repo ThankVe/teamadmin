@@ -2,7 +2,7 @@ import { Calendar, Clock, MapPin, Users, Image as ImageIcon } from 'lucide-react
 import { useNavigate } from 'react-router-dom';
 import { EventItem } from '@/types/event';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 
@@ -11,16 +11,16 @@ interface EventCardProps {
   onClick?: () => void;
 }
 
-const statusConfig: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' | 'destructive' }> = {
-  acknowledged: { label: 'รับทราบ', variant: 'secondary' },
-  pending: { label: 'รอดำเนินการ', variant: 'secondary' },
-  confirmed: { label: 'ยืนยันแล้ว', variant: 'default' },
-  in_progress: { label: 'กำลังดำเนินงาน', variant: 'default' },
-  completed: { label: 'เสร็จสิ้น', variant: 'outline' },
-  cancelled: { label: 'ยกเลิก', variant: 'destructive' },
+const statusConfig: Record<string, { label: string; color: string; bgColor: string }> = {
+  acknowledged: { label: 'รับทราบงาน', color: 'text-yellow-700', bgColor: 'bg-yellow-500' },
+  pending: { label: 'รอดำเนินการ', color: 'text-yellow-700', bgColor: 'bg-yellow-500' },
+  in_progress: { label: 'ดำเนินงาน', color: 'text-blue-700', bgColor: 'bg-blue-500' },
+  confirmed: { label: 'ยืนยันแล้ว', color: 'text-blue-700', bgColor: 'bg-blue-500' },
+  completed: { label: 'เสร็จสิ้นงาน', color: 'text-green-700', bgColor: 'bg-green-500' },
+  cancelled: { label: 'ยกเลิก', color: 'text-red-700', bgColor: 'bg-red-500' },
 };
 
-const defaultStatus = { label: 'ไม่ระบุ', variant: 'secondary' as const };
+const defaultStatus = { label: 'ไม่ระบุ', color: 'text-gray-700', bgColor: 'bg-gray-500' };
 
 export const EventCard = ({ event, onClick }: EventCardProps) => {
   const navigate = useNavigate();
@@ -62,10 +62,18 @@ export const EventCard = ({ event, onClick }: EventCardProps) => {
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-        <div className="absolute bottom-3 right-3">
-          <Badge variant={status.variant} className="shadow-sm">
-            {status.label}
-          </Badge>
+        
+        {/* Status Badge - Prominent position top-left */}
+        <div className="absolute top-3 left-3">
+          <div className={cn(
+            "flex items-center gap-1.5 px-3 py-1.5 rounded-full shadow-lg",
+            "bg-white/95 backdrop-blur-sm border border-white/50"
+          )}>
+            <span className={cn("w-2.5 h-2.5 rounded-full", status.bgColor)} />
+            <span className={cn("text-xs font-semibold", status.color)}>
+              {status.label}
+            </span>
+          </div>
         </div>
       </div>
 

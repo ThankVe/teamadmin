@@ -16,6 +16,8 @@ import Team from "./pages/admin/Team";
 import Settings from "./pages/admin/Settings";
 import AdminSetup from "./pages/AdminSetup";
 import NotFound from "./pages/NotFound";
+import Profile from "./pages/Profile";
+import MyJobs from "./pages/MyJobs";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +40,8 @@ const App = () => (
             <Route path="/admin/categories" element={<Categories />} />
             <Route path="/admin/team" element={<Team />} />
             <Route path="/admin/settings" element={<Settings />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/my-jobs" element={<MyJobs />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

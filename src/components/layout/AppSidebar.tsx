@@ -11,7 +11,8 @@ import {
   Users,
   ChevronLeft,
   ChevronRight,
-  FolderOpen
+  FolderOpen,
+  User
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -22,59 +23,25 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const menuItems = [
-  { 
-    title: 'หน้าแรก', 
-    path: '/', 
-    icon: Home,
-    requireAuth: false,
-  },
-  { 
-    title: 'กิจกรรมทั้งหมด', 
-    path: '/events', 
-    icon: Calendar,
-    requireAuth: false,
-  },
+  { title: 'หน้าแรก', path: '/', icon: Home },
+  { title: 'กิจกรรมทั้งหมด', path: '/events', icon: Calendar },
 ];
 
 const adminMenuItems = [
-  { 
-    title: 'Dashboard', 
-    path: '/admin/dashboard', 
-    icon: LayoutDashboard,
-    requireAuth: true,
-  },
-  { 
-    title: 'เพิ่มงาน', 
-    path: '/admin/add-event', 
-    icon: PlusCircle,
-    requireAuth: true,
-  },
-  { 
-    title: 'จัดการงาน', 
-    path: '/admin/manage-events', 
-    icon: Camera,
-    requireAuth: true,
-  },
-  { 
-    title: 'ประเภทงาน', 
-    path: '/admin/categories', 
-    icon: FolderOpen,
-    requireAuth: true,
-  },
-  { 
-    title: 'ทีมงาน', 
-    path: '/admin/team', 
-    icon: Users,
-    requireAuth: true,
-  },
-  { 
-    title: 'ตั้งค่าเว็บไซต์', 
-    path: '/admin/settings', 
-    icon: Settings,
-    requireAuth: true,
-  },
+  { title: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
+  { title: 'เพิ่มงาน', path: '/admin/add-event', icon: PlusCircle },
+  { title: 'จัดการงาน', path: '/admin/manage-events', icon: Camera },
+  { title: 'ประเภทงาน', path: '/admin/categories', icon: FolderOpen },
+  { title: 'ทีมงาน', path: '/admin/team', icon: Users },
+  { title: 'ตั้งค่าเว็บไซต์', path: '/admin/settings', icon: Settings },
+];
+
+const teamMemberMenuItems = [
+  { title: 'งานของฉัน', path: '/my-jobs', icon: Camera },
+  { title: 'โปรไฟล์', path: '/profile', icon: User },
 ];
 
 export const AppSidebar = () => {
@@ -82,6 +49,12 @@ export const AppSidebar = () => {
   const location = useLocation();
   const { user, isAdmin, signOut } = useAuth();
   const { settings } = useSiteSettings();
+  const isMobile = useIsMobile();
+
+  // Hide sidebar on mobile - use MobileMenu instead
+  if (isMobile) {
+    return null;
+  }
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -159,8 +132,22 @@ export const AppSidebar = () => {
           ))}
         </div>
 
-        {/* Admin Menu - Show for logged in users */}
-        {user && (
+        {/* Team Member Menu */}
+        {user && !isAdmin && (
+          <div className="space-y-1 pt-4 mt-4 border-t border-sidebar-border">
+            {!collapsed && (
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-4 mb-2">
+                ทีมงาน
+              </p>
+            )}
+            {teamMemberMenuItems.map(item => (
+              <MenuItem key={item.path} item={item} />
+            ))}
+          </div>
+        )}
+
+        {/* Admin Menu - Show for admin users only */}
+        {user && isAdmin && (
           <div className="space-y-1 pt-4 mt-4 border-t border-sidebar-border">
             {!collapsed && (
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-4 mb-2">
