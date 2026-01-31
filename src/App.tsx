@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Events from "./pages/Events";
+import EventDetail from "./pages/EventDetail";
 import Dashboard from "./pages/admin/Dashboard";
 import AddEvent from "./pages/admin/AddEvent";
 import ManageEvents from "./pages/admin/ManageEvents";
@@ -30,6 +31,7 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/setup" element={<AdminSetup />} />
             <Route path="/events" element={<Events />} />
+            <Route path="/event/:id" element={<EventDetail />} />
             <Route path="/admin/dashboard" element={<Dashboard />} />
             <Route path="/admin/add-event" element={<AddEvent />} />
             <Route path="/admin/manage-events" element={<ManageEvents />} />
