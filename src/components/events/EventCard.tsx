@@ -1,4 +1,5 @@
-import { Calendar, Clock, MapPin, Users } from 'lucide-react';
+import { Calendar, Clock, MapPin, Users, Image as ImageIcon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { EventItem } from '@/types/event';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -22,12 +23,21 @@ const statusConfig: Record<string, { label: string; variant: 'default' | 'second
 const defaultStatus = { label: 'ไม่ระบุ', variant: 'secondary' as const };
 
 export const EventCard = ({ event, onClick }: EventCardProps) => {
+  const navigate = useNavigate();
   const status = statusConfig[event.status] || defaultStatus;
   const formattedDate = new Date(event.date).toLocaleDateString('th-TH', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   });
+
+  const handleClick = () => {
+    if (onClick) {
+      onClick();
+    } else {
+      navigate(`/event/${event.id}`);
+    }
+  };
 
   return (
     <Card 
@@ -36,11 +46,22 @@ export const EventCard = ({ event, onClick }: EventCardProps) => {
         'border-border/50 hover:border-primary/30',
         'bg-card hover:shadow-pink transition-all duration-300'
       )}
-      onClick={onClick}
+      onClick={handleClick}
     >
-      {/* Cover Image Placeholder */}
-      <div className="h-32 gradient-soft relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-accent/10" />
+      {/* Cover Image */}
+      <div className="h-36 relative overflow-hidden bg-muted">
+        {event.coverImage ? (
+          <img 
+            src={event.coverImage} 
+            alt={event.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/10 to-accent/10">
+            <ImageIcon className="w-12 h-12 text-muted-foreground/30" />
+          </div>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
         <div className="absolute bottom-3 right-3">
           <Badge variant={status.variant} className="shadow-sm">
             {status.label}
