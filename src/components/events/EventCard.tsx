@@ -19,8 +19,10 @@ const statusConfig: Record<string, { label: string; variant: 'default' | 'second
   cancelled: { label: 'ยกเลิก', variant: 'destructive' },
 };
 
+const defaultStatus = { label: 'ไม่ระบุ', variant: 'secondary' as const };
+
 export const EventCard = ({ event, onClick }: EventCardProps) => {
-  const status = statusConfig[event.status];
+  const status = statusConfig[event.status] || defaultStatus;
   const formattedDate = new Date(event.date).toLocaleDateString('th-TH', {
     year: 'numeric',
     month: 'long',
