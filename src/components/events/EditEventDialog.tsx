@@ -147,17 +147,52 @@ export const EditEventDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
-        <DialogHeader className="flex-shrink-0">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col p-0">
+        <DialogHeader className="flex-shrink-0 px-6 pt-6 pb-4">
           <DialogTitle>แก้ไขกิจกรรม</DialogTitle>
           <DialogDescription>
             แก้ไขรายละเอียดกิจกรรมและกดบันทึกเมื่อเสร็จสิ้น
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="flex-1 overflow-hidden flex flex-col min-h-0">
-          <ScrollArea className="flex-1 pr-4" style={{ maxHeight: 'calc(85vh - 180px)' }}>
+        <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+          <div className="flex-1 overflow-y-auto px-6">
             <div className="space-y-4 pb-4">
+              {/* Status - Prominently displayed at top */}
+              <div className="space-y-3 p-4 rounded-lg border-2 border-primary/20 bg-primary/5">
+                <Label className="flex items-center gap-2 text-base font-semibold">
+                  <Camera className="w-5 h-5 text-primary" />
+                  สถานะงาน
+                </Label>
+                <div className="grid grid-cols-2 gap-2">
+                  {statusOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => setFormData((prev) => ({ ...prev, status: option.value }))}
+                      className={`flex items-center justify-center gap-2 p-3 rounded-lg border-2 transition-all ${
+                        formData.status === option.value
+                          ? option.value === 'in_progress'
+                            ? 'border-blue-500 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
+                            : option.value === 'completed'
+                            ? 'border-green-500 bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300'
+                            : 'border-primary bg-primary/10 text-primary'
+                          : 'border-border hover:border-primary/50 hover:bg-secondary'
+                      }`}
+                    >
+                      <span className={`w-3 h-3 rounded-full ${
+                        option.value === 'in_progress' 
+                          ? 'bg-blue-500' 
+                          : option.value === 'completed' 
+                          ? 'bg-green-500' 
+                          : 'bg-amber-500'
+                      }`} />
+                      <span className="font-medium text-sm">{option.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               {/* Category */}
               <div className="space-y-2">
                 <Label htmlFor="edit-category" className="flex items-center gap-2">
@@ -381,41 +416,6 @@ export const EditEventDialog = ({
                 />
               </div>
 
-              {/* Status - Prominently displayed */}
-              <div className="space-y-3 p-4 rounded-lg border-2 border-primary/20 bg-primary/5">
-                <Label className="flex items-center gap-2 text-base font-semibold">
-                  <Camera className="w-5 h-5 text-primary" />
-                  สถานะงาน
-                </Label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {statusOptions
-                    .filter(opt => opt.value === 'in_progress' || opt.value === 'completed')
-                    .map((option) => (
-                      <button
-                        key={option.value}
-                        type="button"
-                        onClick={() => setFormData((prev) => ({ ...prev, status: option.value }))}
-                        className={`flex items-center justify-center gap-2 p-3 rounded-lg border-2 transition-all ${
-                          formData.status === option.value
-                            ? option.value === 'in_progress'
-                              ? 'border-blue-500 bg-blue-50 text-blue-700'
-                              : 'border-green-500 bg-green-50 text-green-700'
-                            : 'border-border hover:border-primary/50 hover:bg-secondary'
-                        }`}
-                      >
-                        <span className={`w-3 h-3 rounded-full ${
-                          option.value === 'in_progress' ? 'bg-blue-500' : 'bg-green-500'
-                        }`} />
-                        <span className="font-medium">{option.label}</span>
-                      </button>
-                    ))}
-                </div>
-                {formData.status === 'acknowledged' && (
-                  <p className="text-sm text-muted-foreground">
-                    สถานะปัจจุบัน: รับทราบงาน — เลือกสถานะด้านบนเพื่อเปลี่ยน
-                  </p>
-                )}
-              </div>
 
               {/* Description */}
               <div className="space-y-2">
@@ -473,9 +473,9 @@ export const EditEventDialog = ({
                 </div>
               </div>
             </div>
-          </ScrollArea>
+          </div>
 
-          <DialogFooter className="pt-4 border-t">
+          <DialogFooter className="flex-shrink-0 px-6 py-4 border-t bg-background">
             <Button
               type="button"
               variant="outline"
