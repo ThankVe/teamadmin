@@ -23,7 +23,7 @@ interface HeaderProps {
 
 export const Header = ({ onSearch }: HeaderProps) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const { user, isAdmin, signOut } = useAuth();
+  const { user, profile, isAdmin, signOut } = useAuth();
   const { settings } = useSiteSettings();
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -33,7 +33,9 @@ export const Header = ({ onSearch }: HeaderProps) => {
     onSearch?.(searchQuery);
   };
 
-  const userInitials = user?.email?.slice(0, 2).toUpperCase() || 'U';
+  // Get display name from profile or fallback to email
+  const displayName = profile?.full_name || user?.email?.split('@')[0] || 'ผู้ใช้';
+  const userInitials = displayName.slice(0, 2).toUpperCase();
 
   return (
     <header className="h-14 md:h-16 border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-40">
@@ -100,7 +102,7 @@ export const Header = ({ onSearch }: HeaderProps) => {
                 <>
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium">บัญชีผู้ใช้</p>
+                      <p className="text-sm font-medium">{displayName}</p>
                       <p className="text-xs text-muted-foreground truncate max-w-[180px]">
                         {user.email}
                       </p>
