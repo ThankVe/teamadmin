@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { useNavigate } from 'react-router-dom';
@@ -90,10 +90,13 @@ export const Header = ({ onSearch }: HeaderProps) => {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-9 w-9 md:h-10 md:w-10 rounded-full p-0">
-                <Avatar className="h-8 w-8 md:h-9 md:w-9 border-2 border-primary/20">
-                  <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground text-sm">
-                    {user ? userInitials : <User className="w-4 h-4" />}
-                  </AvatarFallback>
+              <Avatar className="h-8 w-8 md:h-9 md:w-9 border-2 border-primary/20">
+                {profile?.avatar_url && (
+                  <AvatarImage src={profile.avatar_url} alt={displayName} />
+                )}
+                <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground text-sm">
+                  {user ? userInitials : <User className="w-4 h-4" />}
+                </AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
