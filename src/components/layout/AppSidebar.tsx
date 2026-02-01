@@ -12,7 +12,8 @@ import {
   ChevronLeft,
   ChevronRight,
   FolderOpen,
-  User
+  User,
+  UsersRound
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -36,6 +37,7 @@ const adminMenuItems = [
   { title: 'จัดการงาน', path: '/admin/manage-events', icon: Camera },
   { title: 'ประเภทงาน', path: '/admin/categories', icon: FolderOpen },
   { title: 'ทีมงาน', path: '/admin/team', icon: Users },
+  { title: 'จัดการบทบาท', path: '/admin/users', icon: UsersRound },
   { title: 'ตั้งค่าเว็บไซต์', path: '/admin/settings', icon: Settings },
 ];
 

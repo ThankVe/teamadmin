@@ -14,6 +14,7 @@ import ManageEvents from "./pages/admin/ManageEvents";
 import Categories from "./pages/admin/Categories";
 import Team from "./pages/admin/Team";
 import Settings from "./pages/admin/Settings";
+import UserManagement from "./pages/admin/UserManagement";
 import AdminSetup from "./pages/AdminSetup";
 import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="/admin/manage-events" element={<ManageEvents />} />
             <Route path="/admin/categories" element={<Categories />} />
             <Route path="/admin/team" element={<Team />} />
+            <Route path="/admin/users" element={<UserManagement />} />
             <Route path="/admin/settings" element={<Settings />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/my-jobs" element={<MyJobs />} />

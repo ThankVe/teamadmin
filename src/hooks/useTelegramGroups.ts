@@ -132,16 +132,24 @@ export const useTelegramGroups = () => {
 
       if (error) throw error;
 
-      toast({
-        title: 'ส่งการแจ้งเตือนสำเร็จ',
-        description: 'ตรวจสอบ Telegram ของคุณ',
-      });
+      if (data?.success) {
+        toast({
+          title: 'ส่งการแจ้งเตือนสำเร็จ',
+          description: 'ตรวจสอบ Telegram ของคุณ',
+        });
+      } else {
+        toast({
+          title: 'ไม่สามารถส่งได้',
+          description: 'ตรวจสอบ Chat ID และ Bot Token ให้ถูกต้อง',
+          variant: 'destructive',
+        });
+      }
 
-      return { success: true };
+      return { success: data?.success || false };
     } catch (error: any) {
       toast({
         title: 'เกิดข้อผิดพลาด',
-        description: 'ไม่สามารถส่งการแจ้งเตือนได้',
+        description: 'ไม่สามารถส่งการแจ้งเตือนได้ ตรวจสอบการตั้งค่า',
         variant: 'destructive',
       });
       return { success: false, error };

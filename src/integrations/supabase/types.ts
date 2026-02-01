@@ -183,6 +183,7 @@ export type Database = {
           id: string
           login_background_url: string | null
           logo_url: string | null
+          show_banner_text: boolean
           site_name: string
           updated_at: string
         }
@@ -193,6 +194,7 @@ export type Database = {
           id?: string
           login_background_url?: string | null
           logo_url?: string | null
+          show_banner_text?: boolean
           site_name?: string
           updated_at?: string
         }
@@ -203,6 +205,7 @@ export type Database = {
           id?: string
           login_background_url?: string | null
           logo_url?: string | null
+          show_banner_text?: boolean
           site_name?: string
           updated_at?: string
         }
@@ -297,6 +300,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_all_users_with_roles: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          created_at: string
+          email: string
+          full_name: string
+          role: string
+          user_id: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
