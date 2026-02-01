@@ -39,6 +39,7 @@ const Settings = () => {
   const [formData, setFormData] = useState({
     site_name: '',
     description: '',
+    show_banner_text: true,
   });
 
   // Image previews (for newly selected files before upload)
@@ -67,12 +68,12 @@ const Settings = () => {
   const logoInputRef = useRef<HTMLInputElement>(null);
   const loginBgInputRef = useRef<HTMLInputElement>(null);
 
-  // Initialize form data when settings load
   useEffect(() => {
     if (settings) {
       setFormData({
         site_name: settings.site_name || '',
         description: settings.description || '',
+        show_banner_text: settings.show_banner_text !== false,
       });
     }
   }, [settings]);
@@ -96,7 +97,7 @@ const Settings = () => {
     setIsSaving(true);
     
     try {
-      const updates: Record<string, string> = { ...formData };
+      const updates: Record<string, string | boolean> = { ...formData };
 
       // Upload pending images
       const bucketMap = {
@@ -120,7 +121,7 @@ const Settings = () => {
         }
       }
 
-      await updateSettings(updates);
+      await updateSettings(updates as any);
       
       // Clear previews after successful save
       Object.keys(previews).forEach(key => {
@@ -214,6 +215,20 @@ const Settings = () => {
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder="ระบบจัดการงานถ่ายภาพและวิดีโอ"
                 rows={3}
+              />
+            </div>
+
+            <div className="flex items-center justify-between pt-4 border-t">
+              <div className="space-y-0.5">
+                <Label htmlFor="show_banner_text">แสดงข้อความบน Banner</Label>
+                <p className="text-sm text-muted-foreground">
+                  เปิด/ปิด การแสดงชื่อและคำอธิบายบน Banner หน้าแรก
+                </p>
+              </div>
+              <Switch
+                id="show_banner_text"
+                checked={formData.show_banner_text}
+                onCheckedChange={(checked) => setFormData({ ...formData, show_banner_text: checked })}
               />
             </div>
           </CardContent>
@@ -488,9 +503,18 @@ const Settings = () => {
               </div>
             )}
 
-            <p className="text-xs text-muted-foreground">
-              💡 วิธีหา Chat ID: เพิ่ม Bot เข้ากลุ่ม แล้วใช้ @userinfobot หรือ @getmyid_bot
-            </p>
+            <div className="p-4 bg-muted/50 rounded-lg space-y-2">
+              <p className="text-sm font-medium">💡 วิธีหา Chat ID ของกลุ่ม Telegram:</p>
+              <ol className="text-xs text-muted-foreground space-y-1 list-decimal list-inside">
+                <li>เพิ่ม Bot ของคุณเข้าไปในกลุ่ม Telegram</li>
+                <li>เพิ่ม @RawDataBot เข้ากลุ่ม จากนั้นจะแสดง Chat ID ทันที</li>
+                <li>Chat ID ของกลุ่ม Supergroup จะเริ่มต้นด้วย <code className="bg-background px-1 rounded">-100</code> ตามด้วยตัวเลข</li>
+                <li>คัดลอก Chat ID ทั้งหมด (รวมเครื่องหมายลบ) มาใส่</li>
+              </ol>
+              <p className="text-xs text-muted-foreground pt-2">
+                ⚠️ ตรวจสอบว่า Bot เป็น Admin ของกลุ่มด้วย และรูปแบบ Chat ID ถูกต้อง เช่น <code className="bg-background px-1 rounded">-1001234567890</code>
+              </p>
+            </div>
           </CardContent>
         </Card>
 

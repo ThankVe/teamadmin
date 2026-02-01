@@ -9,6 +9,7 @@ export interface SiteSettings {
   banner_url: string | null;
   login_background_url: string | null;
   description: string | null;
+  show_banner_text: boolean;
 }
 
 export const useSiteSettings = () => {
