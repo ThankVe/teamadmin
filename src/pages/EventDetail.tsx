@@ -10,13 +10,13 @@ import {
   Package, Camera, FileText, Image as ImageIcon 
 } from 'lucide-react';
 
-const statusConfig: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' | 'destructive' }> = {
-  acknowledged: { label: 'รับทราบ', variant: 'secondary' },
-  pending: { label: 'รอดำเนินการ', variant: 'secondary' },
-  confirmed: { label: 'ยืนยันแล้ว', variant: 'default' },
-  in_progress: { label: 'กำลังดำเนินงาน', variant: 'default' },
-  completed: { label: 'เสร็จสิ้น', variant: 'outline' },
-  cancelled: { label: 'ยกเลิก', variant: 'destructive' },
+const statusConfig: Record<string, { label: string; bgColor: string; textColor: string }> = {
+  acknowledged: { label: 'รับทราบงาน', bgColor: 'bg-yellow-500', textColor: 'text-white' },
+  pending: { label: 'รอดำเนินการ', bgColor: 'bg-yellow-500', textColor: 'text-white' },
+  in_progress: { label: 'กำลังดำเนินงาน', bgColor: 'bg-blue-500', textColor: 'text-white' },
+  confirmed: { label: 'ยืนยันแล้ว', bgColor: 'bg-blue-500', textColor: 'text-white' },
+  completed: { label: 'เสร็จสิ้นงาน', bgColor: 'bg-green-500', textColor: 'text-white' },
+  cancelled: { label: 'ยกเลิก', bgColor: 'bg-red-500', textColor: 'text-white' },
 };
 
 const EventDetail = () => {
@@ -25,7 +25,7 @@ const EventDetail = () => {
   const { events, isLoading } = useEventsData();
 
   const event = events.find(e => e.id === id);
-  const status = event ? (statusConfig[event.status] || { label: 'ไม่ระบุ', variant: 'secondary' as const }) : null;
+  const status = event ? (statusConfig[event.status] || { label: 'ไม่ระบุ', bgColor: 'bg-gray-500', textColor: 'text-white' }) : null;
 
   const formattedDate = event ? new Date(event.date).toLocaleDateString('th-TH', {
     weekday: 'long',
@@ -89,12 +89,12 @@ const EventDetail = () => {
             <ArrowLeft className="w-5 h-5" />
           </Button>
 
-          {/* Status Badge */}
+          {/* Status Badge - Fixed position and visibility */}
           {status && (
-            <div className="absolute bottom-4 right-4">
-              <Badge variant={status.variant} className="text-sm px-3 py-1">
+            <div className="absolute top-4 right-4">
+              <span className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold shadow-lg ${status.bgColor} ${status.textColor}`}>
                 {status.label}
-              </Badge>
+              </span>
             </div>
           )}
         </div>

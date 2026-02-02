@@ -4,8 +4,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useEventsData } from '@/hooks/useEvents';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, CheckCircle, Clock, XCircle, TrendingUp, Camera } from 'lucide-react';
+import { Calendar, CheckCircle, Clock, XCircle, TrendingUp, Camera, BarChart3 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 const months = [
   'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
@@ -48,6 +49,23 @@ const Dashboard = () => {
     const cancelled = events.filter(e => e.status === 'cancelled').length;
     return { total, pending, confirmed, completed, cancelled };
   }, [events]);
+
+  // Generate monthly chart data for selected year
+  const monthlyChartData = useMemo(() => {
+    return months.map((monthName, index) => {
+      const count = events.filter(event => {
+        const eventDate = new Date(event.date);
+        return eventDate.getFullYear() === selectedYear && eventDate.getMonth() === index;
+      }).length;
+      
+      return {
+        month: monthName.slice(0, 3), // Short month name
+        fullMonth: monthName,
+        count,
+        isSelected: index === selectedMonth,
+      };
+    });
+  }, [events, selectedYear, selectedMonth]);
 
   const statCards = [
     {
@@ -196,6 +214,59 @@ const Dashboard = () => {
           ))}
         </div>
 
+        {/* Monthly Events Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="w-5 h-5 text-primary" />
+              จำนวนงานรายเดือน ปี {selectedYear + 543}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={monthlyChartData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis 
+                    dataKey="month" 
+                    tick={{ fontSize: 12 }}
+                    className="fill-muted-foreground"
+                  />
+                  <YAxis 
+                    allowDecimals={false}
+                    tick={{ fontSize: 12 }}
+                    className="fill-muted-foreground"
+                  />
+                  <Tooltip 
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const data = payload[0].payload;
+                        return (
+                          <div className="bg-popover border border-border rounded-lg p-2 shadow-lg">
+                            <p className="font-medium text-foreground">{data.fullMonth}</p>
+                            <p className="text-sm text-muted-foreground">{data.count} งาน</p>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                    {monthlyChartData.map((entry, index) => (
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={entry.isSelected ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground) / 0.3)'}
+                        className="cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => setSelectedMonth(index)}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Overall Stats */}
         <Card>
           <CardHeader>
@@ -210,12 +281,12 @@ const Dashboard = () => {
                 <p className="text-3xl font-bold text-foreground">{allStats.total}</p>
                 <p className="text-sm text-muted-foreground">งานทั้งหมด</p>
               </div>
-              <div className="text-center p-4 rounded-xl bg-yellow-100">
-                <p className="text-3xl font-bold text-yellow-600">{allStats.pending}</p>
+              <div className="text-center p-4 rounded-xl bg-amber-500/10">
+                <p className="text-3xl font-bold text-amber-600">{allStats.pending}</p>
                 <p className="text-sm text-muted-foreground">รอดำเนินการ</p>
               </div>
-              <div className="text-center p-4 rounded-xl bg-green-100">
-                <p className="text-3xl font-bold text-green-600">{allStats.confirmed}</p>
+              <div className="text-center p-4 rounded-xl bg-emerald-500/10">
+                <p className="text-3xl font-bold text-emerald-600">{allStats.confirmed}</p>
                 <p className="text-sm text-muted-foreground">ยืนยันแล้ว</p>
               </div>
               <div className="text-center p-4 rounded-xl bg-muted">
