@@ -3,7 +3,7 @@ import { MainLayout } from '@/components/layout/MainLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTeamMembers } from '@/hooks/useTeamMembers';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,7 +38,7 @@ const Team = () => {
   
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [newMember, setNewMember] = useState({ name: '', email: '', phone: '', role: 'photographer' });
+  const [newMember, setNewMember] = useState({ name: '', email: '', phone: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleAddMember = async (e: React.FormEvent) => {
@@ -49,13 +49,13 @@ const Team = () => {
       name: newMember.name,
       email: newMember.email || null,
       phone: newMember.phone || null,
-      role: newMember.role || 'photographer',
+      role: null,
       avatar_url: null,
       is_active: true,
     });
 
     if (!error) {
-      setNewMember({ name: '', email: '', phone: '', role: 'photographer' });
+      setNewMember({ name: '', email: '', phone: '' });
       setIsAddDialogOpen(false);
     }
     
@@ -87,15 +87,12 @@ const Team = () => {
           อีเมล?: string;
           phone?: string;
           โทรศัพท์?: string;
-          role?: string;
-          ตำแหน่ง?: string;
         }>;
 
         const members = jsonData.map(row => ({
           name: row.name || row['ชื่อ'] || '',
           email: row.email || row['อีเมล'] || '',
           phone: row.phone || row['โทรศัพท์'] || '',
-          role: row.role || row['ตำแหน่ง'] || 'photographer',
         })).filter(m => m.name);
 
         if (members.length === 0) {
@@ -235,15 +232,6 @@ const Team = () => {
                           placeholder="0812345678"
                         />
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="role">ตำแหน่ง</Label>
-                        <Input
-                          id="role"
-                          value={newMember.role}
-                          onChange={(e) => setNewMember({ ...newMember, role: e.target.value })}
-                          placeholder="photographer"
-                        />
-                      </div>
                       <div className="flex justify-end gap-3">
                         <Button
                           type="button"
@@ -278,7 +266,7 @@ const Team = () => {
             <CardContent className="py-4">
               <p className="text-sm text-muted-foreground">
                 💡 <strong>วิธีนำเข้าจาก Excel:</strong> ไฟล์ต้องมีคอลัมน์ "name" หรือ "ชื่อ" (บังคับ), 
-                "email" หรือ "อีเมล", "phone" หรือ "โทรศัพท์", "role" หรือ "ตำแหน่ง"
+                "email" หรือ "อีเมล", "phone" หรือ "โทรศัพท์"
               </p>
             </CardContent>
           </Card>
@@ -290,18 +278,22 @@ const Team = () => {
             <Card key={member.id} className="hover-lift group">
               <CardContent className="p-6">
                 <div className="flex items-center gap-4">
-                  <Avatar className="w-14 h-14 border-2 border-primary/20">
-                    <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground text-lg">
+                  <Avatar className="w-16 h-16 border-2 border-primary/20">
+                    {member.avatar_url && (
+                      <AvatarImage 
+                        src={member.avatar_url} 
+                        alt={member.name}
+                        className="object-cover"
+                      />
+                    )}
+                    <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground text-xl">
                       {member.name.charAt(0)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-lg truncate">{member.name}</h3>
-                    <p className="text-sm text-muted-foreground truncate">
-                      {member.role || 'ช่างภาพ'}
-                    </p>
                     {member.email && (
-                      <p className="text-xs text-muted-foreground truncate">{member.email}</p>
+                      <p className="text-sm text-muted-foreground truncate">{member.email}</p>
                     )}
                   </div>
                   {isAdmin && (
