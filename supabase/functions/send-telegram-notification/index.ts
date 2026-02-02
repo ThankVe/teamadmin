@@ -13,6 +13,8 @@ interface EventData {
   start_time: string;
   end_time: string;
   location?: string;
+  cover_image_url?: string;
+  photographers?: Array<{ id: string; name: string }>;
 }
 
 interface StatusUpdate {
@@ -27,20 +29,17 @@ interface RequestBody {
   statusUpdate?: StatusUpdate;
 }
 
-const sendToTelegram = async (botToken: string, chatId: string, message: string): Promise<{ success: boolean; error?: string }> => {
+const sendTextMessage = async (botToken: string, chatId: string, message: string): Promise<{ success: boolean; error?: string }> => {
   try {
-    // Sanitize chat ID - remove spaces and validate format
     const cleanChatId = chatId.replace(/\s/g, '').trim();
     
-    // Validate chat ID format (should be a number, optionally with - prefix for groups)
     if (!/^-?\d+$/.test(cleanChatId)) {
       console.error(`Invalid chat ID format: "${chatId}" -> "${cleanChatId}"`);
       return { success: false, error: `รูปแบบ Chat ID ไม่ถูกต้อง: ${chatId}` };
     }
 
     const telegramUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
-
-    console.log(`Sending to Telegram chat: ${cleanChatId}`);
+    console.log(`Sending text to Telegram chat: ${cleanChatId}`);
 
     const response = await fetch(telegramUrl, {
       method: 'POST',
@@ -66,6 +65,53 @@ const sendToTelegram = async (botToken: string, chatId: string, message: string)
     console.error(`Error sending to chat ${chatId}:`, error);
     return { success: false, error: String(error) };
   }
+};
+
+const sendPhotoMessage = async (botToken: string, chatId: string, photoUrl: string, caption: string): Promise<{ success: boolean; error?: string }> => {
+  try {
+    const cleanChatId = chatId.replace(/\s/g, '').trim();
+    
+    if (!/^-?\d+$/.test(cleanChatId)) {
+      return { success: false, error: `รูปแบบ Chat ID ไม่ถูกต้อง: ${chatId}` };
+    }
+
+    const telegramUrl = `https://api.telegram.org/bot${botToken}/sendPhoto`;
+    console.log(`Sending photo to Telegram chat: ${cleanChatId}`);
+
+    const response = await fetch(telegramUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: cleanChatId,
+        photo: photoUrl,
+        caption: caption,
+        parse_mode: 'Markdown',
+      }),
+    });
+
+    const result = await response.json();
+    
+    if (!result.ok) {
+      const errorMsg = result.description || 'Unknown error';
+      console.error(`Telegram photo API error for chat ${cleanChatId}:`, errorMsg);
+      // Fallback to text message if photo fails
+      return sendTextMessage(botToken, cleanChatId, caption);
+    }
+    
+    console.log(`Photo sent successfully to chat ${cleanChatId}`);
+    return { success: true };
+  } catch (error) {
+    console.error(`Error sending photo to chat ${chatId}:`, error);
+    // Fallback to text message
+    return sendTextMessage(botToken, chatId, caption);
+  }
+};
+
+const sendToTelegram = async (botToken: string, chatId: string, message: string, photoUrl?: string): Promise<{ success: boolean; error?: string }> => {
+  if (photoUrl) {
+    return sendPhotoMessage(botToken, chatId, photoUrl, message);
+  }
+  return sendTextMessage(botToken, chatId, message);
 };
 
 const handler = async (req: Request): Promise<Response> => {
@@ -99,6 +145,12 @@ const handler = async (req: Request): Promise<Response> => {
     });
 
     let message: string;
+    let photoUrl: string | undefined = event.cover_image_url;
+    
+    // Format photographers list
+    const photographersList = event.photographers && event.photographers.length > 0
+      ? event.photographers.map(p => p.name).join(', ')
+      : null;
 
     if (test) {
       message = `
@@ -107,6 +159,7 @@ const handler = async (req: Request): Promise<Response> => {
 ✅ การเชื่อมต่อสำเร็จ!
 📅 เวลา: ${new Date().toLocaleString('th-TH')}
       `.trim();
+      photoUrl = undefined; // No photo for test
     } else if (statusUpdate) {
       // Status update notification
       message = `
@@ -117,6 +170,7 @@ const handler = async (req: Request): Promise<Response> => {
 📅 *วันที่:* ${formattedDate}
 ⏰ *เวลา:* ${event.start_time} - ${event.end_time}
 ${event.location ? `📍 *สถานที่:* ${event.location}` : ''}
+${photographersList ? `👥 *ผู้รับผิดชอบ:* ${photographersList}` : ''}
 
 📊 *สถานะ:* ${statusUpdate.oldStatus} → *${statusUpdate.newStatus}*
       `.trim();
@@ -130,6 +184,7 @@ ${event.location ? `📍 *สถานที่:* ${event.location}` : ''}
 📅 *วันที่:* ${formattedDate}
 ⏰ *เวลา:* ${event.start_time} - ${event.end_time}
 ${event.location ? `📍 *สถานที่:* ${event.location}` : ''}
+${photographersList ? `👥 *ผู้รับผิดชอบ:* ${photographersList}` : ''}
 
 _กรุณาตรวจสอบและเตรียมตัวล่วงหน้า_
       `.trim();
@@ -191,9 +246,9 @@ _กรุณาตรวจสอบและเตรียมตัวล่�
       );
     }
 
-    // Send to all groups
+    // Send to all groups (with photo if available)
     const results = await Promise.all(
-      chatIds.map(id => sendToTelegram(TELEGRAM_BOT_TOKEN, id, message))
+      chatIds.map(id => sendToTelegram(TELEGRAM_BOT_TOKEN, id, message, photoUrl))
     );
 
     const successCount = results.filter(r => r.success).length;

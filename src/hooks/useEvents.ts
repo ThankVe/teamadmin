@@ -119,7 +119,17 @@ export const useEventsData = () => {
         await supabase.from('event_photographers').insert(photographerRecords);
       }
 
-      // Send Telegram notification
+      // Fetch photographer names for notification
+      let photographerNames: Array<{ id: string; name: string }> = [];
+      if (photographerIds.length > 0) {
+        const { data: teamData } = await supabase
+          .from('team_members')
+          .select('id, name')
+          .in('id', photographerIds);
+        photographerNames = teamData || [];
+      }
+
+      // Send Telegram notification with photographers and image
       try {
         await supabase.functions.invoke('send-telegram-notification', {
           body: {
@@ -130,6 +140,8 @@ export const useEventsData = () => {
               start_time: eventData.start_time,
               end_time: eventData.end_time,
               location: eventData.location,
+              cover_image_url: eventData.cover_image_url,
+              photographers: photographerNames,
             },
           },
         });
