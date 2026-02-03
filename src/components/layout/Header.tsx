@@ -89,13 +89,13 @@ export const Header = ({ onSearch }: HeaderProps) => {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-9 w-9 md:h-10 md:w-10 rounded-full p-0">
-              <Avatar className="h-8 w-8 md:h-9 md:w-9 border-2 border-primary/20">
+              <Button variant="ghost" className="relative h-11 w-11 md:h-12 md:w-12 rounded-full p-0">
+              <Avatar className="h-10 w-10 md:h-11 md:w-11 border-2 border-primary/20">
                 {profile?.avatar_url && (
-                  <AvatarImage src={profile.avatar_url} alt={displayName} />
+                  <AvatarImage src={profile.avatar_url} alt={displayName} className="object-cover" />
                 )}
-                <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground text-sm">
-                  {user ? userInitials : <User className="w-4 h-4" />}
+                <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground text-base">
+                  {user ? userInitials : <User className="w-5 h-5" />}
                 </AvatarFallback>
                 </Avatar>
               </Button>
