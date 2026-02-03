@@ -190,11 +190,11 @@ const Profile = () => {
             {/* Avatar */}
             <div className="flex flex-col sm:flex-row items-center gap-4">
               <div className="relative">
-                <Avatar className="w-24 h-24 border-4 border-primary/20">
+                <Avatar className="w-32 h-32 border-4 border-primary/20">
                   {displayAvatar ? (
-                    <AvatarImage src={displayAvatar} alt="Avatar" />
+                    <AvatarImage src={displayAvatar} alt="Avatar" className="object-cover" />
                   ) : null}
-                  <AvatarFallback className="text-2xl bg-gradient-to-br from-primary to-accent text-primary-foreground">
+                  <AvatarFallback className="text-3xl bg-gradient-to-br from-primary to-accent text-primary-foreground">
                     {userInitials}
                   </AvatarFallback>
                 </Avatar>

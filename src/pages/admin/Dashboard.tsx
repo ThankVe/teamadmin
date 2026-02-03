@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar, CheckCircle, Clock, XCircle, TrendingUp, Camera, BarChart3 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { ExportDialog } from '@/components/dashboard/ExportDialog';
 
 const months = [
   'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
@@ -156,8 +157,16 @@ const Dashboard = () => {
             </p>
           </div>
 
-          {/* Month Filter */}
+          {/* Month Filter & Export */}
           <div className="flex items-center gap-3">
+            <ExportDialog
+              events={monthlyEvents}
+              stats={stats}
+              selectedMonth={selectedMonth}
+              selectedYear={selectedYear}
+              months={months}
+            />
+            
             <select
               value={selectedMonth.toString()}
               onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
