@@ -2,10 +2,9 @@ import { useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserManagement } from '@/hooks/useUserManagement';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -23,7 +22,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { UsersRound, XCircle, Shield, User } from 'lucide-react';
+import { UsersRound, XCircle, Shield, User, Edit } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const UserManagement = () => {
@@ -32,7 +31,7 @@ const UserManagement = () => {
   
   const [pendingChange, setPendingChange] = useState<{
     userId: string;
-    newRole: 'admin' | 'user';
+    newRole: 'admin' | 'editor' | 'user';
     userName: string;
   } | null>(null);
 
@@ -101,7 +100,7 @@ const UserManagement = () => {
         <Card className="bg-muted/50">
           <CardContent className="py-4">
             <p className="text-sm text-muted-foreground">
-              💡 <strong>บทบาท:</strong> ผู้ดูแลระบบ (Admin) สามารถจัดการได้ทุกอย่าง | ทีมงาน (User) สามารถดูงานที่ได้รับมอบหมาย
+              💡 <strong>บทบาท:</strong> ผู้ดูแลระบบ (Admin) = จัดการได้ทุกอย่าง | ผู้จัดการงาน (Editor) = เพิ่ม/แก้ไขงานได้ | ทีมงาน (User) = ดูงานที่ได้รับมอบหมาย
             </p>
           </CardContent>
         </Card>
@@ -134,12 +133,14 @@ const UserManagement = () => {
                     <div className="flex items-center gap-2 flex-1 sm:flex-none">
                       {u.role === 'admin' ? (
                         <Shield className="w-4 h-4 text-primary" />
+                      ) : u.role === 'editor' ? (
+                        <Edit className="w-4 h-4 text-blue-500" />
                       ) : (
                         <User className="w-4 h-4 text-muted-foreground" />
                       )}
                       <Select
                         value={u.role}
-                        onValueChange={(value: 'admin' | 'user') => {
+                        onValueChange={(value: 'admin' | 'editor' | 'user') => {
                           if (value !== u.role) {
                             setPendingChange({
                               userId: u.user_id,
@@ -150,7 +151,7 @@ const UserManagement = () => {
                         }}
                         disabled={u.user_id === user.id}
                       >
-                        <SelectTrigger className="w-full sm:w-[160px]">
+                        <SelectTrigger className="w-full sm:w-[180px]">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -158,6 +159,12 @@ const UserManagement = () => {
                             <div className="flex items-center gap-2">
                               <Shield className="w-4 h-4" />
                               ผู้ดูแลระบบ
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="editor">
+                            <div className="flex items-center gap-2">
+                              <Edit className="w-4 h-4" />
+                              ผู้จัดการงาน
                             </div>
                           </SelectItem>
                           <SelectItem value="user">
@@ -198,7 +205,7 @@ const UserManagement = () => {
               <AlertDialogDescription>
                 คุณต้องการเปลี่ยนบทบาทของ "{pendingChange?.userName}" เป็น{' '}
                 <strong>
-                  {pendingChange?.newRole === 'admin' ? 'ผู้ดูแลระบบ' : 'ทีมงาน'}
+                  {pendingChange?.newRole === 'admin' ? 'ผู้ดูแลระบบ' : pendingChange?.newRole === 'editor' ? 'ผู้จัดการงาน' : 'ทีมงาน'}
                 </strong>{' '}
                 ใช่หรือไม่?
               </AlertDialogDescription>
