@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User, Mail, Save, Upload, Loader2, Camera } from 'lucide-react';
+import { User, Mail, Save, Upload, Loader2, Camera, Lock, Eye, EyeOff } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 
@@ -35,6 +35,15 @@ const Profile = () => {
   });
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [pendingAvatarFile, setPendingAvatarFile] = useState<File | null>(null);
+  
+  // Password change state
+  const [passwordData, setPasswordData] = useState({
+    newPassword: '',
+    confirmPassword: '',
+  });
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
   
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
@@ -140,6 +149,62 @@ const Profile = () => {
       });
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (!passwordData.newPassword || !passwordData.confirmPassword) {
+      toast({
+        title: 'กรุณากรอกข้อมูล',
+        description: 'กรุณากรอกรหัสผ่านใหม่และยืนยันรหัสผ่าน',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (passwordData.newPassword.length < 6) {
+      toast({
+        title: 'รหัสผ่านสั้นเกินไป',
+        description: 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast({
+        title: 'รหัสผ่านไม่ตรงกัน',
+        description: 'กรุณากรอกรหัสผ่านยืนยันให้ตรงกับรหัสผ่านใหม่',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsChangingPassword(true);
+
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: passwordData.newPassword,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'เปลี่ยนรหัสผ่านสำเร็จ',
+        description: 'รหัสผ่านของคุณถูกเปลี่ยนแล้ว',
+      });
+
+      // Clear password fields
+      setPasswordData({ newPassword: '', confirmPassword: '' });
+    } catch (error: any) {
+      console.error('Error changing password:', error);
+      toast({
+        title: 'เกิดข้อผิดพลาด',
+        description: error.message || 'ไม่สามารถเปลี่ยนรหัสผ่านได้',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsChangingPassword(false);
     }
   };
 
@@ -275,6 +340,109 @@ const Profile = () => {
                   <Save className="w-4 h-4" />
                 )}
                 บันทึกการเปลี่ยนแปลง
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Password Change Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Lock className="w-5 h-5 text-primary" />
+              เปลี่ยนรหัสผ่าน
+            </CardTitle>
+            <CardDescription>
+              ตั้งรหัสผ่านใหม่สำหรับบัญชีของคุณ
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="newPassword" className="flex items-center gap-2">
+                <Lock className="w-4 h-4" />
+                รหัสผ่านใหม่
+              </Label>
+              <div className="relative">
+                <Input
+                  id="newPassword"
+                  type={showNewPassword ? 'text' : 'password'}
+                  value={passwordData.newPassword}
+                  onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
+                  placeholder="กรอกรหัสผ่านใหม่ (อย่างน้อย 6 ตัวอักษร)"
+                  className="pr-10"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                >
+                  {showNewPassword ? (
+                    <EyeOff className="w-4 h-4 text-muted-foreground" />
+                  ) : (
+                    <Eye className="w-4 h-4 text-muted-foreground" />
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword" className="flex items-center gap-2">
+                <Lock className="w-4 h-4" />
+                ยืนยันรหัสผ่านใหม่
+              </Label>
+              <div className="relative">
+                <Input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  value={passwordData.confirmPassword}
+                  onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                  placeholder="กรอกรหัสผ่านใหม่อีกครั้ง"
+                  className="pr-10"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="w-4 h-4 text-muted-foreground" />
+                  ) : (
+                    <Eye className="w-4 h-4 text-muted-foreground" />
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            {/* Password Match Indicator */}
+            {passwordData.newPassword && passwordData.confirmPassword && (
+              <p className={`text-sm ${
+                passwordData.newPassword === passwordData.confirmPassword 
+                  ? 'text-green-600' 
+                  : 'text-destructive'
+              }`}>
+                {passwordData.newPassword === passwordData.confirmPassword 
+                  ? '✓ รหัสผ่านตรงกัน' 
+                  : '✗ รหัสผ่านไม่ตรงกัน'}
+              </p>
+            )}
+
+            <div className="flex justify-end pt-4 border-t">
+              <Button
+                onClick={handleChangePassword}
+                disabled={isChangingPassword || !passwordData.newPassword || !passwordData.confirmPassword}
+                variant="outline"
+                className="gap-2"
+              >
+                {isChangingPassword ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Lock className="w-4 h-4" />
+                )}
+                เปลี่ยนรหัสผ่าน
               </Button>
             </div>
           </CardContent>
