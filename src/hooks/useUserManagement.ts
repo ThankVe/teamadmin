@@ -7,7 +7,7 @@ export interface UserWithRole {
   email: string;
   full_name: string | null;
   avatar_url: string | null;
-  role: 'admin' | 'user';
+  role: 'admin' | 'editor' | 'user';
   created_at: string;
 }
 
@@ -29,7 +29,7 @@ export const useUserManagement = () => {
     }
   };
 
-  const updateUserRole = async (userId: string, newRole: 'admin' | 'user') => {
+  const updateUserRole = async (userId: string, newRole: 'admin' | 'editor' | 'user') => {
     try {
       // First check if user already has a role entry
       const { data: existingRole, error: checkError } = await supabase
@@ -64,9 +64,15 @@ export const useUserManagement = () => {
         )
       );
 
+      const roleLabels = {
+        admin: 'ผู้ดูแลระบบ',
+        editor: 'ผู้จัดการงาน',
+        user: 'ทีมงาน'
+      };
+
       toast({
         title: 'อัปเดตบทบาทสำเร็จ',
-        description: `เปลี่ยนบทบาทเป็น ${newRole === 'admin' ? 'ผู้ดูแลระบบ' : 'ทีมงาน'} แล้ว`,
+        description: `เปลี่ยนบทบาทเป็น ${roleLabels[newRole]} แล้ว`,
       });
 
       return { error: null };

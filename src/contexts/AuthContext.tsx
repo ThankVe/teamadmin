@@ -15,6 +15,8 @@ interface AuthContextType {
   profile: Profile | null;
   isLoading: boolean;
   isAdmin: boolean;
+  isEditor: boolean;
+  canManageEvents: boolean;
   signUp: (email: string, password: string, fullName?: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -29,18 +31,32 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isEditor, setIsEditor] = useState(false);
 
-  const checkAdminStatus = async () => {
+  // Can manage events if admin or editor
+  const canManageEvents = isAdmin || isEditor;
+
+  const checkRoleStatus = async () => {
     try {
-      const { data, error } = await supabase.rpc('is_admin');
-      if (error) {
-        console.error('Error checking admin status:', error);
-        return false;
-      }
-      return data === true;
+      const { data: adminData } = await supabase.rpc('is_admin');
+      const isAdminUser = adminData === true;
+      
+      // Check if user has editor role
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) return { isAdmin: false, isEditor: false };
+      
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userData.user.id)
+        .maybeSingle();
+      
+      const isEditorUser = roleData?.role === 'editor';
+      
+      return { isAdmin: isAdminUser, isEditor: isEditorUser };
     } catch (err) {
-      console.error('Error in checkAdminStatus:', err);
-      return false;
+      console.error('Error in checkRoleStatus:', err);
+      return { isAdmin: false, isEditor: false };
     }
   };
 
@@ -77,18 +93,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        // Defer profile and admin check to avoid blocking
+        // Defer profile and role check to avoid blocking
         setTimeout(async () => {
-          const [profileData, adminStatus] = await Promise.all([
+          const [profileData, roleStatus] = await Promise.all([
             fetchProfile(session.user.id),
-            checkAdminStatus()
+            checkRoleStatus()
           ]);
           setProfile(profileData);
-          setIsAdmin(adminStatus);
+          setIsAdmin(roleStatus.isAdmin);
+          setIsEditor(roleStatus.isEditor);
         }, 0);
       } else {
         setProfile(null);
         setIsAdmin(false);
+        setIsEditor(false);
       }
       
       setIsLoading(false);
@@ -100,12 +118,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        const [profileData, adminStatus] = await Promise.all([
+        const [profileData, roleStatus] = await Promise.all([
           fetchProfile(session.user.id),
-          checkAdminStatus()
+          checkRoleStatus()
         ]);
         setProfile(profileData);
-        setIsAdmin(adminStatus);
+        setIsAdmin(roleStatus.isAdmin);
+        setIsEditor(roleStatus.isEditor);
       }
       
       setIsLoading(false);
@@ -148,6 +167,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     await supabase.auth.signOut();
     setProfile(null);
     setIsAdmin(false);
+    setIsEditor(false);
   };
 
   return (
@@ -157,6 +177,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       profile,
       isLoading,
       isAdmin,
+      isEditor,
+      canManageEvents,
       signUp,
       signIn,
       signOut,
