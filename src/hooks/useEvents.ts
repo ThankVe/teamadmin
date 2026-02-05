@@ -149,6 +149,36 @@ export const useEventsData = () => {
         console.error('Error sending Telegram notification:', telegramError);
       }
 
+       // Send in-app notifications to assigned photographers
+       if (photographerIds.length > 0) {
+         try {
+           // Get user_ids for the assigned team members
+           const { data: teamMembersData } = await supabase
+             .from('team_members')
+             .select('user_id')
+             .in('id', photographerIds)
+             .not('user_id', 'is', null);
+
+           if (teamMembersData && teamMembersData.length > 0) {
+             const notificationRecords = teamMembersData
+               .filter(tm => tm.user_id)
+               .map(tm => ({
+                 user_id: tm.user_id as string,
+                 title: 'งานใหม่ที่ได้รับมอบหมาย',
+                 message: `คุณได้รับมอบหมายให้ทำงาน "${eventData.title}" ในวันที่ ${eventData.date}`,
+                 type: 'job_assigned',
+                 event_id: newEvent.id,
+               }));
+
+             if (notificationRecords.length > 0) {
+               await supabase.from('notifications').insert(notificationRecords);
+             }
+           }
+         } catch (notificationError) {
+           console.error('Error sending in-app notifications:', notificationError);
+         }
+       }
+
       await fetchEvents();
       
       toast({
