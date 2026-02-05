@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
+ import { formatThaiDateShort, parseDateString } from '@/lib/dateUtils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEventsData } from '@/hooks/useEvents';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,15 +29,15 @@ const Dashboard = () => {
   // Get events for selected month
   const monthlyEvents = useMemo(() => {
     return events.filter(event => {
-      const eventDate = new Date(event.date);
+       const eventDate = parseDateString(event.date);
       return eventDate.getFullYear() === selectedYear && eventDate.getMonth() === selectedMonth;
     });
   }, [events, selectedYear, selectedMonth]);
 
   const stats = useMemo(() => {
     const total = monthlyEvents.length;
-    const pending = monthlyEvents.filter(e => e.status === 'pending').length;
-    const confirmed = monthlyEvents.filter(e => e.status === 'confirmed').length;
+     const pending = monthlyEvents.filter(e => e.status === 'pending' || e.status === 'acknowledged').length;
+     const confirmed = monthlyEvents.filter(e => e.status === 'confirmed' || e.status === 'in_progress').length;
     const completed = monthlyEvents.filter(e => e.status === 'completed').length;
     const cancelled = monthlyEvents.filter(e => e.status === 'cancelled').length;
     return { total, pending, confirmed, completed, cancelled };
@@ -44,8 +45,8 @@ const Dashboard = () => {
 
   const allStats = useMemo(() => {
     const total = events.length;
-    const pending = events.filter(e => e.status === 'pending').length;
-    const confirmed = events.filter(e => e.status === 'confirmed').length;
+     const pending = events.filter(e => e.status === 'pending' || e.status === 'acknowledged').length;
+     const confirmed = events.filter(e => e.status === 'confirmed' || e.status === 'in_progress').length;
     const completed = events.filter(e => e.status === 'completed').length;
     const cancelled = events.filter(e => e.status === 'cancelled').length;
     return { total, pending, confirmed, completed, cancelled };
@@ -55,7 +56,7 @@ const Dashboard = () => {
   const monthlyChartData = useMemo(() => {
     return months.map((monthName, index) => {
       const count = events.filter(event => {
-        const eventDate = new Date(event.date);
+         const eventDate = parseDateString(event.date);
         return eventDate.getFullYear() === selectedYear && eventDate.getMonth() === index;
       }).length;
       
@@ -330,10 +331,7 @@ const Dashboard = () => {
                     <div className="flex-1 min-w-0">
                       <h4 className="font-semibold truncate">{event.title}</h4>
                       <p className="text-sm text-muted-foreground">
-                        {new Date(event.date).toLocaleDateString('th-TH', {
-                          day: 'numeric',
-                          month: 'short',
-                        })} • {event.start_time} - {event.end_time}
+                         {formatThaiDateShort(event.date)} • {event.start_time} - {event.end_time}
                       </p>
                     </div>
                     <Badge variant={

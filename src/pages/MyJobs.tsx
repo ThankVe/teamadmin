@@ -1,7 +1,8 @@
-import { useMemo } from 'react';
-import { MainLayout } from '@/components/layout/MainLayout';
-import { useAuth } from '@/contexts/AuthContext';
-import { useEventsData } from '@/hooks/useEvents';
+ import { useMemo, useEffect, useState } from 'react';
+ import { MainLayout } from '@/components/layout/MainLayout';
+ import { useAuth } from '@/contexts/AuthContext';
+ import { useEventsData } from '@/hooks/useEvents';
+ import { supabase } from '@/integrations/supabase/client';
 import { EventCard } from '@/components/events/EventCard';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -12,20 +13,38 @@ const MyJobs = () => {
   const { user, isLoading: authLoading } = useAuth();
   const { events, isLoading: eventsLoading } = useEventsData();
 
-  // Find events assigned to the current user
-  // We need to match by name since team_members might be linked via name
-  const myEvents = useMemo(() => {
-    if (!user?.email) return [];
-    
-    return events.filter(event => {
-      // Check if user is in photographers list by matching name with email prefix
-      const emailPrefix = user.email?.split('@')[0]?.toLowerCase() || '';
-      const isAssigned = event.photographers?.some(
-        p => p.name?.toLowerCase().includes(emailPrefix)
-      );
-      return isAssigned;
-    });
-  }, [events, user]);
+   const [myTeamMemberId, setMyTeamMemberId] = useState<string | null>(null);
+ 
+   // Fetch the current user's team_member_id
+   useEffect(() => {
+     const fetchTeamMemberId = async () => {
+       if (!user?.id) return;
+       
+       const { data } = await supabase
+         .from('team_members')
+         .select('id')
+         .eq('user_id', user.id)
+         .maybeSingle();
+       
+       if (data) {
+         setMyTeamMemberId(data.id);
+       }
+     };
+     
+     fetchTeamMemberId();
+   }, [user?.id]);
+ 
+   // Find events assigned to the current user by matching team_member_id
+   const myEvents = useMemo(() => {
+     if (!myTeamMemberId) return [];
+     
+     return events.filter(event => {
+       const isAssigned = event.photographers?.some(
+         p => p.id === myTeamMemberId
+       );
+       return isAssigned;
+     });
+   }, [events, myTeamMemberId]);
 
   // Transform event for EventCard
   const transformEvent = (event: typeof events[0]) => ({
