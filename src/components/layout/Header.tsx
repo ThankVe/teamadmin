@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Search, Bell, User } from 'lucide-react';
+ import { useState } from 'react';
+ import { Search, User } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,8 +14,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { useNavigate } from 'react-router-dom';
-import { MobileMenu } from './MobileMenu';
-import { useIsMobile } from '@/hooks/use-mobile';
+ import { MobileMenu } from './MobileMenu';
+ import { NotificationDropdown } from './NotificationDropdown';
+ import { useIsMobile } from '@/hooks/use-mobile';
 
 interface HeaderProps {
   onSearch?: (query: string) => void;
@@ -76,16 +77,7 @@ export const Header = ({ onSearch }: HeaderProps) => {
 
         {/* Right Side */}
         <div className="flex items-center gap-1 md:gap-2">
-          {user && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="relative h-9 w-9 md:h-10 md:w-10"
-            >
-              <Bell className="w-4 h-4 md:w-5 md:h-5" />
-              <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full" />
-            </Button>
-          )}
+         {user && <NotificationDropdown />}
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

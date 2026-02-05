@@ -1,4 +1,5 @@
-import { Calendar, Clock, MapPin, Users, Image as ImageIcon } from 'lucide-react';
+ import { Calendar, Clock, MapPin, Users, Image as ImageIcon } from 'lucide-react';
+ import { formatThaiDate } from '@/lib/dateUtils';
 import { useNavigate } from 'react-router-dom';
 import { EventItem } from '@/types/event';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -24,12 +25,8 @@ const defaultStatus = { label: 'ไม่ระบุ', color: 'text-gray-700', 
 
 export const EventCard = ({ event, onClick }: EventCardProps) => {
   const navigate = useNavigate();
-  const status = statusConfig[event.status] || defaultStatus;
-  const formattedDate = new Date(event.date).toLocaleDateString('th-TH', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
+   const status = statusConfig[event.status] || defaultStatus;
+   const formattedDate = formatThaiDate(event.date);
 
   const handleClick = () => {
     if (onClick) {
