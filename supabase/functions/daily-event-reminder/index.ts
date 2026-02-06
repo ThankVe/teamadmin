@@ -116,6 +116,10 @@ const handler = async (req: Request): Promise<Response> => {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+    // Check if this is triggered by cron - if so, verify the time matches the configured time
+    const requestBody = await req.json().catch(() => ({}));
+    const isManualTest = requestBody?.manual === true;
+
     // Get today's date in Thailand timezone (UTC+7)
     const now = new Date();
     const thailandOffset = 7 * 60 * 60 * 1000; // 7 hours in milliseconds

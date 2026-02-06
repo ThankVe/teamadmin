@@ -4,13 +4,16 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import { useImageUpload } from '@/hooks/useImageUpload';
 import { useTelegramGroups } from '@/hooks/useTelegramGroups';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
-import { Camera, Save, Settings as SettingsIcon, XCircle, Image as ImageIcon, Upload, Loader2, X, Bell, Plus, Trash2, Send } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Camera, Save, Settings as SettingsIcon, XCircle, Image as ImageIcon, Upload, Loader2, X, Bell, Plus, Trash2, Send, Clock, CalendarCheck } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   AlertDialog,
@@ -28,6 +31,7 @@ const Settings = () => {
   const { settings, isLoading: settingsLoading, updateSettings, refetch } = useSiteSettings();
   const { uploadImage, isUploading } = useImageUpload();
   const { groups, isLoading: groupsLoading, addGroup, updateGroup, deleteGroup, testNotification } = useTelegramGroups();
+  const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
 
   // Telegram form
@@ -35,6 +39,8 @@ const Settings = () => {
   const [newGroupChatId, setNewGroupChatId] = useState('');
   const [deleteGroupId, setDeleteGroupId] = useState<string | null>(null);
   const [testingGroupId, setTestingGroupId] = useState<string | null>(null);
+  const [testingDailyReminder, setTestingDailyReminder] = useState(false);
+  const [dailyReminderTime, setDailyReminderTime] = useState('07:00');
 
   const [formData, setFormData] = useState({
     site_name: '',
@@ -75,8 +81,63 @@ const Settings = () => {
         description: settings.description || '',
         show_banner_text: settings.show_banner_text !== false,
       });
+      // Set daily reminder time from settings
+      if ((settings as any).daily_reminder_time) {
+        const timeStr = (settings as any).daily_reminder_time;
+        setDailyReminderTime(timeStr.substring(0, 5)); // Extract HH:MM
+      }
     }
   }, [settings]);
+
+  const testDailyReminder = async () => {
+    setTestingDailyReminder(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('daily-event-reminder', {
+        body: {},
+      });
+
+      if (error) throw error;
+
+      if (data?.eventsCount === 0) {
+        toast({
+          title: 'ไม่มีงานวันนี้',
+          description: 'ไม่มีงานที่กำหนดไว้สำหรับวันนี้',
+        });
+      } else if (data?.success) {
+        toast({
+          title: 'ส่งการแจ้งเตือนสำเร็จ ✅',
+          description: `ส่งรายการงาน ${data.eventsCount} รายการไปยัง ${data.sent}/${data.total} กลุ่ม`,
+        });
+      } else {
+        toast({
+          title: 'ไม่สามารถส่งได้',
+          description: data?.message || 'ไม่ทราบสาเหตุ',
+          variant: 'destructive',
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: 'เกิดข้อผิดพลาด',
+        description: error?.message || 'ไม่สามารถเชื่อมต่อระบบได้',
+        variant: 'destructive',
+      });
+    } finally {
+      setTestingDailyReminder(false);
+    }
+  };
+
+  const handleReminderTimeChange = async (newTime: string) => {
+    setDailyReminderTime(newTime);
+    try {
+      await updateSettings({ daily_reminder_time: newTime + ':00' } as any);
+      toast({
+        title: 'บันทึกเวลาแจ้งเตือนแล้ว',
+        description: `ระบบจะแจ้งเตือนทุกวันเวลา ${newTime} น.`,
+      });
+    } catch (error) {
+      console.error('Error saving reminder time:', error);
+    }
+  };
 
   const handleFileSelect = (file: File, type: 'banner' | 'logo' | 'login_background') => {
     // Create preview URL
@@ -513,6 +574,79 @@ const Settings = () => {
               </ol>
               <p className="text-xs text-muted-foreground pt-2">
                 ⚠️ ตรวจสอบว่า Bot เป็น Admin ของกลุ่มด้วย และรูปแบบ Chat ID ถูกต้อง เช่น <code className="bg-background px-1 rounded">-1001234567890</code>
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Daily Reminder Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CalendarCheck className="w-5 h-5 text-primary" />
+              แจ้งเตือนรายวันอัตโนมัติ
+            </CardTitle>
+            <CardDescription>
+              ระบบจะส่งรายการงานประจำวันไปยัง Telegram ทุกเช้าตามเวลาที่กำหนด
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Time Selector */}
+            <div className="flex items-center justify-between p-4 border rounded-lg">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Clock className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <p className="font-medium">เวลาแจ้งเตือน</p>
+                  <p className="text-sm text-muted-foreground">
+                    ระบบจะส่งสรุปงานทุกวันตามเวลานี้ (เวลาไทย)
+                  </p>
+                </div>
+              </div>
+              <Select value={dailyReminderTime} onValueChange={handleReminderTimeChange}>
+                <SelectTrigger className="w-32">
+                  <SelectValue placeholder="เลือกเวลา" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="05:00">05:00 น.</SelectItem>
+                  <SelectItem value="06:00">06:00 น.</SelectItem>
+                  <SelectItem value="07:00">07:00 น.</SelectItem>
+                  <SelectItem value="08:00">08:00 น.</SelectItem>
+                  <SelectItem value="09:00">09:00 น.</SelectItem>
+                  <SelectItem value="10:00">10:00 น.</SelectItem>
+                  <SelectItem value="12:00">12:00 น.</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Test Daily Reminder */}
+            <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/30">
+              <div>
+                <p className="font-medium">ทดสอบการแจ้งเตือนรายวัน</p>
+                <p className="text-sm text-muted-foreground">
+                  ส่งรายการงานวันนี้ไปยังทุกกลุ่ม Telegram ที่เปิดใช้งาน
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                onClick={testDailyReminder}
+                disabled={testingDailyReminder}
+                className="gap-2"
+              >
+                {testingDailyReminder ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <CalendarCheck className="w-4 h-4" />
+                )}
+                ทดสอบแจ้งเตือนรายวัน
+              </Button>
+            </div>
+
+            <div className="p-4 bg-muted/50 rounded-lg">
+              <p className="text-sm text-muted-foreground">
+                📅 ระบบจะตรวจสอบงานที่มีในวันนั้นและส่งสรุปไปยัง Telegram โดยอัตโนมัติ 
+                หากไม่มีงานในวันนั้น ระบบจะไม่ส่งการแจ้งเตือน
               </p>
             </div>
           </CardContent>
