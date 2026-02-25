@@ -369,45 +369,47 @@ const AddEvent = () => {
 
               {/* Photographers */}
               <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <Label className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-primary" />
-                    ทีมงานที่รับผิดชอบ
-                  </Label>
-                  {teamMembers.length >= 2 && (
-                    <SpinningWheel
-                      teamMembers={teamMembers}
-                      onSelect={togglePhotographer}
-                      selectedPhotographers={selectedPhotographers}
-                    />
-                  )}
-                </div>
+                <Label className="flex items-center gap-2">
+                  <Users className="w-4 h-4 text-primary" />
+                  ทีมงานที่รับผิดชอบ
+                </Label>
                 {teamMembers.length === 0 ? (
                   <p className="text-sm text-muted-foreground">
                     ยังไม่มีทีมงาน กรุณาเพิ่มทีมงานก่อน
                   </p>
                 ) : (
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                    {teamMembers.map((member) => (
-                      <div
-                        key={member.id}
-                        className="flex items-center space-x-2 p-3 rounded-lg border border-border hover:border-primary/50 transition-colors cursor-pointer"
-                        onClick={() => togglePhotographer(member.id)}
-                      >
-                        <Checkbox
-                          id={`photographer-${member.id}`}
-                          checked={selectedPhotographers.includes(member.id)}
-                          onCheckedChange={() => togglePhotographer(member.id)}
-                        />
-                        <label
-                          htmlFor={`photographer-${member.id}`}
-                          className="text-sm cursor-pointer flex-1"
+                  <>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      {teamMembers.map((member) => (
+                        <div
+                          key={member.id}
+                          className="flex items-center space-x-2 p-3 rounded-lg border border-border hover:border-primary/50 transition-colors cursor-pointer"
+                          onClick={() => togglePhotographer(member.id)}
                         >
-                          {member.name}
-                        </label>
+                          <Checkbox
+                            id={`photographer-${member.id}`}
+                            checked={selectedPhotographers.includes(member.id)}
+                            onCheckedChange={() => togglePhotographer(member.id)}
+                          />
+                          <label
+                            htmlFor={`photographer-${member.id}`}
+                            className="text-sm cursor-pointer flex-1"
+                          >
+                            {member.name}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                    {teamMembers.length >= 2 && (
+                      <div className="flex justify-center pt-2">
+                        <SpinningWheel
+                          teamMembers={teamMembers}
+                          onSelect={togglePhotographer}
+                          selectedPhotographers={selectedPhotographers}
+                        />
                       </div>
-                    ))}
-                  </div>
+                    )}
+                  </>
                 )}
               </div>
 
