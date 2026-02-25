@@ -54,7 +54,7 @@ const statusConfig = {
 };
 
 const ManageEvents = () => {
-  const { user, isAdmin, isLoading: authLoading } = useAuth();
+  const { user, isAdmin, canManageEvents, isLoading: authLoading } = useAuth();
   const { events, isLoading: eventsLoading, deleteEvent, updateEvent } = useEventsData();
   const { categories, isLoading: categoriesLoading } = useEventCategories();
   const navigate = useNavigate();
@@ -86,7 +86,7 @@ const ManageEvents = () => {
     );
   }
 
-  if (!user || !isAdmin) {
+  if (!user || !canManageEvents) {
     return (
       <MainLayout>
         <div className="flex items-center justify-center min-h-[60vh]">

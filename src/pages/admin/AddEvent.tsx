@@ -14,12 +14,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Checkbox } from '@/components/ui/checkbox';
 import { 
   Calendar, Clock, MapPin, Users, XCircle, PlusCircle, Send, Upload, Loader2, 
-  Image as ImageIcon, Briefcase, Camera, FileText, Package 
+  Image as ImageIcon, Briefcase, Camera, FileText, Package, Dices
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { SpinningWheel } from '@/components/events/SpinningWheel';
 
 const AddEvent = () => {
-  const { user, isAdmin, isLoading: authLoading } = useAuth();
+  const { user, isAdmin, canManageEvents, isLoading: authLoading } = useAuth();
   const { teamMembers, isLoading: teamLoading } = useTeamMembers();
   const { categories, isLoading: categoriesLoading } = useEventCategories();
   const { addEvent } = useEventsData();
@@ -96,7 +97,7 @@ const AddEvent = () => {
     );
   }
 
-  if (!user || !isAdmin) {
+  if (!user || !canManageEvents) {
     return (
       <MainLayout>
         <div className="flex items-center justify-center min-h-[60vh]">
@@ -368,10 +369,19 @@ const AddEvent = () => {
 
               {/* Photographers */}
               <div className="space-y-3">
-                <Label className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-primary" />
-                  ทีมงานที่รับผิดชอบ
-                </Label>
+                <div className="flex items-center justify-between">
+                  <Label className="flex items-center gap-2">
+                    <Users className="w-4 h-4 text-primary" />
+                    ทีมงานที่รับผิดชอบ
+                  </Label>
+                  {teamMembers.length >= 2 && (
+                    <SpinningWheel
+                      teamMembers={teamMembers}
+                      onSelect={togglePhotographer}
+                      selectedPhotographers={selectedPhotographers}
+                    />
+                  )}
+                </div>
                 {teamMembers.length === 0 ? (
                   <p className="text-sm text-muted-foreground">
                     ยังไม่มีทีมงาน กรุณาเพิ่มทีมงานก่อน

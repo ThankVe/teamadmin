@@ -16,16 +16,24 @@ const Login = () => {
   const [fullName, setFullName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { signIn, signUp, user } = useAuth();
+  const { signIn, signUp, user, isAdmin, canManageEvents } = useAuth();
   const { settings } = useSiteSettings();
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  
+
   useEffect(() => {
     if (user) {
-      navigate('/admin/dashboard');
+      if (isAdmin) {
+        navigate('/admin/dashboard');
+      } else if (canManageEvents) {
+        navigate('/admin/manage-events');
+      } else {
+        navigate('/');
+      }
     }
-  }, [user, navigate]);
+  }, [user, isAdmin, canManageEvents, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,7 +52,7 @@ const Login = () => {
         title: 'เข้าสู่ระบบสำเร็จ',
         description: 'ยินดีต้อนรับเข้าสู่ระบบจัดการ',
       });
-      navigate('/admin/dashboard');
+      // Navigation will be handled by useEffect when auth state updates
     }
 
     setIsLoading(false);
