@@ -41,6 +41,11 @@ const adminMenuItems = [
   { title: 'ตั้งค่าเว็บไซต์', path: '/admin/settings', icon: Settings },
 ];
 
+const editorMenuItems = [
+  { title: 'เพิ่มงาน', path: '/admin/add-event', icon: PlusCircle },
+  { title: 'จัดการงาน', path: '/admin/manage-events', icon: Camera },
+];
+
 const teamMemberMenuItems = [
   { title: 'งานของฉัน', path: '/my-jobs', icon: Camera },
   { title: 'โปรไฟล์', path: '/profile', icon: User },
@@ -49,7 +54,7 @@ const teamMemberMenuItems = [
 export const AppSidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
-  const { user, isAdmin, signOut } = useAuth();
+  const { user, isAdmin, isEditor, canManageEvents, signOut } = useAuth();
   const { settings } = useSiteSettings();
   const isMobile = useIsMobile();
 
@@ -134,7 +139,7 @@ export const AppSidebar = () => {
           ))}
         </div>
 
-        {/* Team Member Menu */}
+        {/* Team Member Menu - for non-admin users */}
         {user && !isAdmin && (
           <div className="space-y-1 pt-4 mt-4 border-t border-sidebar-border">
             {!collapsed && (
@@ -143,6 +148,20 @@ export const AppSidebar = () => {
               </p>
             )}
             {teamMemberMenuItems.map(item => (
+              <MenuItem key={item.path} item={item} />
+            ))}
+          </div>
+        )}
+
+        {/* Editor Menu - for editor users only */}
+        {user && isEditor && !isAdmin && (
+          <div className="space-y-1 pt-4 mt-4 border-t border-sidebar-border">
+            {!collapsed && (
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-4 mb-2">
+                จัดการงาน
+              </p>
+            )}
+            {editorMenuItems.map(item => (
               <MenuItem key={item.path} item={item} />
             ))}
           </div>
