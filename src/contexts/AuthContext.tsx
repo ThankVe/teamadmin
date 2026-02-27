@@ -87,6 +87,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   useEffect(() => {
+    let roleChannel: ReturnType<typeof supabase.channel> | null = null;
+
     // Set up auth state change listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session);
@@ -125,12 +127,36 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setProfile(profileData);
         setIsAdmin(roleStatus.isAdmin);
         setIsEditor(roleStatus.isEditor);
+
+        // Subscribe to realtime role changes for this user
+        roleChannel = supabase
+          .channel('user-role-changes')
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'user_roles',
+              filter: `user_id=eq.${session.user.id}`,
+            },
+            async () => {
+              const newRoleStatus = await checkRoleStatus();
+              setIsAdmin(newRoleStatus.isAdmin);
+              setIsEditor(newRoleStatus.isEditor);
+            }
+          )
+          .subscribe();
       }
       
       setIsLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      if (roleChannel) {
+        supabase.removeChannel(roleChannel);
+      }
+    };
   }, []);
 
   const signUp = async (email: string, password: string, fullName?: string) => {
