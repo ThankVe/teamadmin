@@ -254,7 +254,7 @@ export const SpinningWheel = ({ teamMembers, onSelect, selectedPhotographers }: 
       const sliceAngle = 360 / currentWheelMembers.length;
       const totalSpins = 6 + Math.random() * 6;
       const randomSlice = Math.floor(Math.random() * currentWheelMembers.length);
-      const targetRotation = currentRotation + totalSpins * 360 + (360 - randomSlice * sliceAngle - sliceAngle / 2);
+      const targetRotation = currentRotation + totalSpins * 360 + (270 - randomSlice * sliceAngle - sliceAngle / 2);
 
       const duration = 4000;
       const startTime = performance.now();
@@ -283,7 +283,7 @@ export const SpinningWheel = ({ teamMembers, onSelect, selectedPhotographers }: 
           animFrameRef.current = requestAnimationFrame(animate);
         } else {
           const normalizedAngle = ((cr % 360) + 360) % 360;
-          const winnerIndex = Math.floor(((360 - normalizedAngle) % 360) / sliceAngle) % currentWheelMembers.length;
+          const winnerIndex = Math.floor(((270 - normalizedAngle) % 360 + 360) % 360 / sliceAngle) % currentWheelMembers.length;
           resolve({ winner: currentWheelMembers[winnerIndex], finalRotation: cr });
         }
       };
