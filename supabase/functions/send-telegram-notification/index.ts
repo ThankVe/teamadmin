@@ -47,7 +47,7 @@ const sendTextMessage = async (botToken: string, chatId: string, message: string
       body: JSON.stringify({
         chat_id: cleanChatId,
         text: message,
-        parse_mode: 'Markdown',
+        parse_mode: 'HTML',
       }),
     });
 
@@ -85,7 +85,7 @@ const sendPhotoMessage = async (botToken: string, chatId: string, photoUrl: stri
         chat_id: cleanChatId,
         photo: photoUrl,
         caption: caption,
-        parse_mode: 'Markdown',
+        parse_mode: 'HTML',
       }),
     });
 
@@ -138,7 +138,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Handle test notification early (no event needed)
     if (test && chatId) {
       const testMessage = `
-🔔 *ทดสอบการแจ้งเตือน*
+🔔 <b>ทดสอบการแจ้งเตือน</b>
 
 ✅ การเชื่อมต่อสำเร็จ!
 📅 เวลา: ${new Date().toLocaleString('th-TH')}
@@ -178,30 +178,30 @@ const handler = async (req: Request): Promise<Response> => {
     if (statusUpdate) {
       // Status update notification
       message = `
-🔄 *อัปเดตสถานะงาน*
+🔄 <b>อัปเดตสถานะงาน</b>
 
-📌 *ชื่องาน:* ${event.title}
-🎯 *กิจกรรม:* ${event.activity_name}
-📅 *วันที่:* ${formattedDate}
-⏰ *เวลา:* ${event.start_time} - ${event.end_time}
-${event.location ? `📍 *สถานที่:* ${event.location}` : ''}
-${photographersList ? `👥 *ผู้รับผิดชอบ:* ${photographersList}` : ''}
+📌 <b>ชื่องาน:</b> ${event.title}
+🎯 <b>กิจกรรม:</b> ${event.activity_name}
+📅 <b>วันที่:</b> ${formattedDate}
+⏰ <b>เวลา:</b> ${event.start_time} - ${event.end_time}
+${event.location ? `📍 <b>สถานที่:</b> ${event.location}` : ''}
+${photographersList ? `👥 <b>ผู้รับผิดชอบ:</b> ${photographersList}` : ''}
 
-📊 *สถานะ:* ${statusUpdate.oldStatus} → *${statusUpdate.newStatus}*
+📊 <b>สถานะ:</b> ${statusUpdate.oldStatus} → <b>${statusUpdate.newStatus}</b>
       `.trim();
     } else {
       // New event notification
       message = `
-🎬 *งานใหม่เข้าระบบ!*
+🎬 <b>งานใหม่เข้าระบบ!</b>
 
-📌 *ชื่องาน:* ${event.title}
-🎯 *กิจกรรม:* ${event.activity_name}
-📅 *วันที่:* ${formattedDate}
-⏰ *เวลา:* ${event.start_time} - ${event.end_time}
-${event.location ? `📍 *สถานที่:* ${event.location}` : ''}
-${photographersList ? `👥 *ผู้รับผิดชอบ:* ${photographersList}` : ''}
+📌 <b>ชื่องาน:</b> ${event.title}
+🎯 <b>กิจกรรม:</b> ${event.activity_name}
+📅 <b>วันที่:</b> ${formattedDate}
+⏰ <b>เวลา:</b> ${event.start_time} - ${event.end_time}
+${event.location ? `📍 <b>สถานที่:</b> ${event.location}` : ''}
+${photographersList ? `👥 <b>ผู้รับผิดชอบ:</b> ${photographersList}` : ''}
 
-_กรุณาตรวจสอบและเตรียมตัวล่วงหน้า_
+<i>กรุณาตรวจสอบและเตรียมตัวล่วงหน้า</i>
       `.trim();
     }
 
