@@ -135,6 +135,29 @@ const handler = async (req: Request): Promise<Response> => {
 
     const { event, test, chatId, statusUpdate } = await req.json() as RequestBody;
 
+    // Handle test notification early (no event needed)
+    if (test && chatId) {
+      const testMessage = `
+🔔 *ทดสอบการแจ้งเตือน*
+
+✅ การเชื่อมต่อสำเร็จ!
+📅 เวลา: ${new Date().toLocaleString('th-TH')}
+      `.trim();
+      const result = await sendTextMessage(TELEGRAM_BOT_TOKEN, chatId, testMessage);
+      return new Response(
+        JSON.stringify({ success: result.success, error: result.error }),
+        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+      );
+    }
+
+    // For non-test requests, event is required
+    if (!event) {
+      return new Response(
+        JSON.stringify({ success: false, error: 'Event data is required' }),
+        { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+      );
+    }
+
     // Format date in Thai
     const eventDate = new Date(event.date);
     const formattedDate = eventDate.toLocaleDateString('th-TH', {
@@ -152,15 +175,7 @@ const handler = async (req: Request): Promise<Response> => {
       ? event.photographers.map(p => p.name).join(', ')
       : null;
 
-    if (test) {
-      message = `
-🔔 *ทดสอบการแจ้งเตือน*
-
-✅ การเชื่อมต่อสำเร็จ!
-📅 เวลา: ${new Date().toLocaleString('th-TH')}
-      `.trim();
-      photoUrl = undefined; // No photo for test
-    } else if (statusUpdate) {
+    if (statusUpdate) {
       // Status update notification
       message = `
 🔄 *อัปเดตสถานะงาน*
