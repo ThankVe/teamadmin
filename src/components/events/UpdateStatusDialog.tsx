@@ -65,6 +65,16 @@ export const UpdateStatusDialog = ({
         try {
           await supabase.functions.invoke('send-telegram-notification', {
             body: {
+              event: {
+                title: selectedEvent.title,
+                activity_name: selectedEvent.activity_name,
+                date: selectedEvent.date,
+                start_time: selectedEvent.start_time,
+                end_time: selectedEvent.end_time,
+                location: selectedEvent.location,
+                cover_image_url: selectedEvent.cover_image_url,
+                photographers: selectedEvent.photographers || [],
+              },
               statusUpdate: {
                 title: selectedEvent.title,
                 activity_name: selectedEvent.activity_name,
