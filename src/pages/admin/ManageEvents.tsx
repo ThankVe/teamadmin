@@ -40,8 +40,10 @@ import {
   Trash2,
   XCircle,
   Filter,
+  RefreshCw,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { UpdateStatusDialog } from '@/components/events/UpdateStatusDialog';
 
 const statusConfig = {
   acknowledged: { label: 'รับทราบงาน', variant: 'secondary' as const },
@@ -55,12 +57,13 @@ const statusConfig = {
 
 const ManageEvents = () => {
   const { user, isAdmin, canManageEvents, isLoading: authLoading } = useAuth();
-  const { events, isLoading: eventsLoading, deleteEvent, updateEvent } = useEventsData();
+  const { events, isLoading: eventsLoading, deleteEvent, updateEvent, refetch } = useEventsData();
   const { categories, isLoading: categoriesLoading } = useEventCategories();
   const navigate = useNavigate();
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [filterCategoryId, setFilterCategoryId] = useState<string>('all');
+  const [statusDialogOpen, setStatusDialogOpen] = useState(false);
 
   const handleDelete = async () => {
     if (deleteId) {
@@ -120,13 +123,23 @@ const ManageEvents = () => {
               ดู แก้ไข และลบงานทั้งหมด
             </p>
           </div>
-          <Button
-            onClick={() => navigate('/admin/add-event')}
-            className="gradient-pink text-primary-foreground gap-2"
-          >
-            <PlusCircle className="w-4 h-4" />
-            เพิ่มงานใหม่
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setStatusDialogOpen(true)}
+              className="gap-2"
+            >
+              <RefreshCw className="w-4 h-4" />
+              อัปเดตสถานะ
+            </Button>
+            <Button
+              onClick={() => navigate('/admin/add-event')}
+              className="gradient-pink text-primary-foreground gap-2"
+            >
+              <PlusCircle className="w-4 h-4" />
+              เพิ่มงานใหม่
+            </Button>
+          </div>
         </div>
 
         {/* Filter */}
@@ -287,6 +300,13 @@ const ManageEvents = () => {
           open={!!editingEvent}
           onOpenChange={(open) => !open && setEditingEvent(null)}
           onSave={updateEvent}
+        />
+        {/* Update Status Dialog */}
+        <UpdateStatusDialog
+          events={filteredEvents}
+          open={statusDialogOpen}
+          onOpenChange={setStatusDialogOpen}
+          onStatusUpdated={refetch}
         />
       </div>
     </MainLayout>
