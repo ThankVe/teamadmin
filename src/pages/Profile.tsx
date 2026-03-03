@@ -21,7 +21,7 @@ interface ProfileData {
 }
 
 const Profile = () => {
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, isLoading: authLoading, refreshProfile: refreshAuthProfile } = useAuth();
   const { uploadImage, isUploading } = useImageUpload();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -133,8 +133,9 @@ const Profile = () => {
       setAvatarPreview(null);
       setPendingAvatarFile(null);
       
-      // Refresh profile
+      // Refresh profile (local + global auth context for header)
       await fetchProfile();
+      await refreshAuthProfile();
 
       toast({
         title: 'บันทึกสำเร็จ',
