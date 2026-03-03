@@ -75,7 +75,13 @@ export const Header = ({ onSearch }: HeaderProps) => {
         {/* Search */}
         <form onSubmit={handleSearch} className="flex-1 max-w-md md:max-w-xl">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <button
+              type="submit"
+              className="absolute left-3 top-1/2 -translate-y-1/2 p-0 bg-transparent border-none cursor-pointer"
+              aria-label="ค้นหา"
+            >
+              <Search className="w-4 h-4 text-muted-foreground" />
+            </button>
             <Input
               type="text"
               placeholder={isMobile ? "ค้นหา..." : "ค้นหากิจกรรม..."}
