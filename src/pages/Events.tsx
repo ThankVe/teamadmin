@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { EventList } from '@/components/events/EventList';
 import { useEventsData } from '@/hooks/useEvents';
@@ -17,8 +18,14 @@ const statusFilters = [
 
 const Events = () => {
   const { events, isLoading } = useEventsData();
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchParams] = useSearchParams();
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [statusFilter, setStatusFilter] = useState('all');
+
+  useEffect(() => {
+    const q = searchParams.get('search');
+    if (q) setSearchQuery(q);
+  }, [searchParams]);
 
   const filteredEvents = useMemo(() => {
     return events

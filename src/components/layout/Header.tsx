@@ -29,9 +29,20 @@ export const Header = ({ onSearch }: HeaderProps) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    if (onSearch) {
+      onSearch(value);
+    }
+  };
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    onSearch?.(searchQuery);
+    if (onSearch) {
+      onSearch(searchQuery);
+    } else if (searchQuery.trim()) {
+      navigate(`/events?search=${encodeURIComponent(searchQuery.trim())}`);
+    }
   };
 
   // Get display name from profile or fallback to email
@@ -69,7 +80,7 @@ export const Header = ({ onSearch }: HeaderProps) => {
               type="text"
               placeholder={isMobile ? "ค้นหา..." : "ค้นหากิจกรรม..."}
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="pl-9 md:pl-10 bg-background border-input focus:border-primary focus:ring-primary/20 h-9 md:h-10 text-sm"
             />
           </div>
