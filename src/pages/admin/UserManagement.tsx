@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserManagement } from '@/hooks/useUserManagement';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -29,11 +30,27 @@ const UserManagement = () => {
   const { user, isAdmin, isLoading: authLoading } = useAuth();
   const { users, isLoading, updateUserRole } = useUserManagement();
   
+  const [avatarPositions, setAvatarPositions] = useState<Record<string, string>>({});
   const [pendingChange, setPendingChange] = useState<{
     userId: string;
     newRole: 'admin' | 'editor' | 'user';
     userName: string;
   } | null>(null);
+
+  // Fetch avatar positions for all users
+  useEffect(() => {
+    const fetchPositions = async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('user_id, avatar_position');
+      if (data) {
+        const map: Record<string, string> = {};
+        data.forEach(p => { if (p.avatar_position) map[p.user_id] = p.avatar_position; });
+        setAvatarPositions(map);
+      }
+    };
+    fetchPositions();
+  }, [users]);
 
   const handleRoleChange = async () => {
     if (pendingChange) {
@@ -113,7 +130,12 @@ const UserManagement = () => {
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                   <Avatar className="w-12 h-12 md:w-14 md:h-14 border-2 border-primary/20">
                     {u.avatar_url ? (
-                      <AvatarImage src={u.avatar_url} alt={u.full_name || ''} />
+                      <AvatarImage 
+                        src={u.avatar_url} 
+                        alt={u.full_name || ''} 
+                        className="object-cover"
+                        style={{ objectPosition: avatarPositions[u.user_id] ? `${avatarPositions[u.user_id].split(',')[0]}% ${avatarPositions[u.user_id].split(',')[1]}%` : '50% 50%' }}
+                      />
                     ) : null}
                     <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground text-lg">
                       {(u.full_name || u.email).charAt(0).toUpperCase()}

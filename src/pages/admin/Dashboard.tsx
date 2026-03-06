@@ -100,16 +100,11 @@ const Dashboard = () => {
     },
   ];
 
-  // Generate years from current year
-  const years = Array.from({ length: 3 }, (_, i) => currentYear + i);
+  // Generate years (3 years back + 2 forward)
+  const years = Array.from({ length: 6 }, (_, i) => currentYear - 3 + i);
 
-  // Available months (from current month onwards for current year)
-  const availableMonths = useMemo(() => {
-    if (selectedYear === currentYear) {
-      return months.slice(currentMonth);
-    }
-    return months;
-  }, [selectedYear, currentYear, currentMonth]);
+  // All months available regardless of year
+  const availableMonths = months;
 
   if (authLoading || eventsLoading) {
     return (
@@ -173,14 +168,11 @@ const Dashboard = () => {
               onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
               className="h-10 w-36 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
             >
-              {availableMonths.map((month, index) => {
-                const monthIndex = selectedYear === currentYear ? currentMonth + index : index;
-                return (
-                  <option key={monthIndex} value={monthIndex.toString()}>
-                    {month}
-                  </option>
-                );
-              })}
+              {availableMonths.map((month, index) => (
+                <option key={index} value={index.toString()}>
+                  {month}
+                </option>
+              ))}
             </select>
 
             <select
@@ -188,11 +180,6 @@ const Dashboard = () => {
               onChange={(e) => {
                 const year = parseInt(e.target.value);
                 setSelectedYear(year);
-                if (year !== currentYear) {
-                  setSelectedMonth(0);
-                } else {
-                  setSelectedMonth(currentMonth);
-                }
               }}
               className="h-10 w-24 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
             >

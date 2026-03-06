@@ -101,7 +101,12 @@ export const Header = ({ onSearch }: HeaderProps) => {
               <Button variant="ghost" className="relative h-11 w-11 md:h-12 md:w-12 rounded-full p-0">
               <Avatar className="h-10 w-10 md:h-11 md:w-11 border-2 border-primary/20">
                 {profile?.avatar_url && (
-                  <AvatarImage src={profile.avatar_url} alt={displayName} className="object-cover" />
+                  <AvatarImage 
+                    src={profile.avatar_url} 
+                    alt={displayName} 
+                    className="object-cover" 
+                    style={{ objectPosition: profile.avatar_position ? `${profile.avatar_position.split(',')[0]}% ${profile.avatar_position.split(',')[1]}%` : '50% 50%' }}
+                  />
                 )}
                 <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground text-base">
                   {user ? userInitials : <User className="w-5 h-5" />}

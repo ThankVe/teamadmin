@@ -5,21 +5,44 @@ import { useEventsData } from '@/hooks/useEvents';
 import { useSiteSettings } from '@/hooks/useSiteSettings';
 import heroBanner from '@/assets/hero-banner.jpg';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+
+const thaiMonths = [
+  'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+  'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+];
 
 const Index = () => {
   const { events, isLoading: eventsLoading } = useEventsData();
   const { settings, isLoading: settingsLoading } = useSiteSettings();
   const [searchQuery, setSearchQuery] = useState('');
 
-  const upcomingEvents = useMemo(() => {
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
+  const now = new Date();
+  const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
+  const [selectedYear, setSelectedYear] = useState(now.getFullYear());
+
+  const yearOptions = useMemo(() => {
+    const current = now.getFullYear();
+    return Array.from({ length: 6 }, (_, i) => current - 3 + i);
+  }, []);
+
+  const navigateMonth = (dir: number) => {
+    let m = selectedMonth + dir;
+    let y = selectedYear;
+    if (m < 0) { m = 11; y--; }
+    if (m > 11) { m = 0; y++; }
+    setSelectedMonth(m);
+    setSelectedYear(y);
+  };
+
+  const filteredEvents = useMemo(() => {
     return events
       .filter(event => {
         const eventDate = new Date(event.date);
-        return eventDate >= now && event.status !== 'cancelled';
-      })
-      .filter(event => {
+        if (eventDate.getMonth() !== selectedMonth || eventDate.getFullYear() !== selectedYear) return false;
+        if (event.status === 'cancelled') return false;
         if (!searchQuery) return true;
         const query = searchQuery.toLowerCase();
         return (
@@ -29,21 +52,8 @@ const Index = () => {
         );
       })
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  }, [events, searchQuery]);
+  }, [events, searchQuery, selectedMonth, selectedYear]);
 
-  const recentEvents = useMemo(() => {
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-    return events
-      .filter(event => {
-        const eventDate = new Date(event.date);
-        return eventDate < now || event.status === 'completed';
-      })
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .slice(0, 4);
-  }, [events]);
-
-  // Transform events to match EventCard expected format
   const transformEvent = (event: typeof events[0]) => ({
     id: event.id,
     title: event.title,
@@ -60,23 +70,18 @@ const Index = () => {
   });
 
   const bannerUrl = settings?.banner_url || heroBanner;
-
   const showBannerText = settings?.show_banner_text !== false;
 
   return (
     <MainLayout onSearch={setSearchQuery}>
       <div className="space-y-8 pb-8">
-        {/* Hero Banner - Full viewport height */}
+        {/* Hero Banner */}
         <section className="relative w-full h-screen -mt-4 overflow-hidden">
           {settingsLoading ? (
             <Skeleton className="w-full h-full" />
           ) : (
             <>
-              <img
-                src={bannerUrl}
-                alt="Hero Banner"
-                className="w-full h-full object-cover"
-              />
+              <img src={bannerUrl} alt="Hero Banner" className="w-full h-full object-cover" />
               <div className="absolute inset-0 bg-black/30" />
               {showBannerText && (
                 <div className="absolute inset-0 flex items-center justify-center text-center p-6">
@@ -94,18 +99,44 @@ const Index = () => {
           )}
         </section>
 
-        {/* Upcoming Events */}
+        {/* Events by Month */}
         <section className="px-6">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
             <div>
-              <h2 className="text-2xl font-bold text-foreground">กิจกรรมที่กำลังจะมาถึง</h2>
-              <p className="text-muted-foreground mt-1">
-                งานที่รอดำเนินการในอนาคต
-              </p>
+              <h2 className="text-2xl font-bold text-foreground">กิจกรรม</h2>
+              <p className="text-muted-foreground mt-1">แสดงงานตามเดือน</p>
             </div>
-            <span className="px-4 py-1.5 rounded-full bg-primary/10 text-primary font-semibold">
-              {upcomingEvents.length} งาน
-            </span>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" onClick={() => navigateMonth(-1)}>
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              <Select value={selectedMonth.toString()} onValueChange={(v) => setSelectedMonth(parseInt(v))}>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {thaiMonths.map((m, i) => (
+                    <SelectItem key={i} value={i.toString()}>{m}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={selectedYear.toString()} onValueChange={(v) => setSelectedYear(parseInt(v))}>
+                <SelectTrigger className="w-[100px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {yearOptions.map((y) => (
+                    <SelectItem key={y} value={y.toString()}>{y + 543}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button variant="ghost" size="icon" onClick={() => navigateMonth(1)}>
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+              <span className="px-4 py-1.5 rounded-full bg-primary/10 text-primary font-semibold whitespace-nowrap">
+                {filteredEvents.length} งาน
+              </span>
+            </div>
           </div>
           {eventsLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -114,24 +145,9 @@ const Index = () => {
               ))}
             </div>
           ) : (
-            <EventList events={upcomingEvents.map(transformEvent)} />
+            <EventList events={filteredEvents.map(transformEvent)} />
           )}
         </section>
-
-        {/* Recent Events */}
-        {recentEvents.length > 0 && (
-          <section className="px-6">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-2xl font-bold text-foreground">งานล่าสุด</h2>
-                <p className="text-muted-foreground mt-1">
-                  งานที่ผ่านมาแล้ว
-                </p>
-              </div>
-            </div>
-            <EventList events={recentEvents.map(transformEvent)} />
-          </section>
-        )}
       </div>
     </MainLayout>
   );
