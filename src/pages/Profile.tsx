@@ -9,15 +9,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { User, Mail, Save, Upload, Loader2, Camera, Lock, Eye, EyeOff } from 'lucide-react';
+import { User, Mail, Save, Upload, Loader2, Camera, Lock, Eye, EyeOff, Move } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
+import { AvatarPositioner } from '@/components/profile/AvatarPositioner';
 
 interface ProfileData {
   id: string;
   full_name: string | null;
   email: string;
   avatar_url: string | null;
+  avatar_position: string | null;
 }
 
 const Profile = () => {
@@ -35,6 +37,8 @@ const Profile = () => {
   });
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [pendingAvatarFile, setPendingAvatarFile] = useState<File | null>(null);
+  const [avatarPosition, setAvatarPosition] = useState('50,50');
+  const [showPositioner, setShowPositioner] = useState(false);
   
   // Password change state
   const [passwordData, setPasswordData] = useState({
@@ -78,6 +82,7 @@ const Profile = () => {
           full_name: data.full_name || '',
           email: data.email || user.email || '',
         });
+        setAvatarPosition(data.avatar_position || '50,50');
       } else {
         setFormData({
           full_name: user.user_metadata?.full_name || '',
@@ -95,6 +100,7 @@ const Profile = () => {
     const previewUrl = URL.createObjectURL(file);
     setAvatarPreview(previewUrl);
     setPendingAvatarFile(file);
+    setShowPositioner(true);
   };
 
   const handleSave = async () => {
@@ -116,6 +122,7 @@ const Profile = () => {
       const updates = {
         full_name: formData.full_name || null,
         avatar_url: avatarUrl,
+        avatar_position: avatarPosition,
         updated_at: new Date().toISOString(),
       };
 
@@ -226,6 +233,7 @@ const Profile = () => {
 
   const displayAvatar = avatarPreview || profile?.avatar_url;
   const userInitials = (formData.full_name || user.email)?.slice(0, 2).toUpperCase() || 'U';
+  const [posX, posY] = avatarPosition.split(',').map(Number);
 
   return (
     <MainLayout>
@@ -258,7 +266,12 @@ const Profile = () => {
               <div className="relative">
                 <Avatar className="w-32 h-32 border-4 border-primary/20">
                   {displayAvatar ? (
-                    <AvatarImage src={displayAvatar} alt="Avatar" className="object-cover" />
+                    <AvatarImage 
+                      src={displayAvatar} 
+                      alt="Avatar" 
+                      className="object-cover" 
+                      style={{ objectPosition: `${posX}% ${posY}%` }}
+                    />
                   ) : null}
                   <AvatarFallback className="text-3xl bg-gradient-to-br from-primary to-accent text-primary-foreground">
                     {userInitials}
@@ -290,6 +303,17 @@ const Profile = () => {
                   <Upload className="w-4 h-4" />
                   เปลี่ยนรูปโปรไฟล์
                 </Button>
+                {displayAvatar && (
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowPositioner(true)}
+                    disabled={isSaving}
+                    className="gap-2"
+                  >
+                    <Move className="w-4 h-4" />
+                    ปรับตำแหน่ง
+                  </Button>
+                )}
                 <p className="text-xs text-muted-foreground mt-2">
                   แนะนำขนาด 200x200 พิกเซล
                 </p>
@@ -449,6 +473,17 @@ const Profile = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Avatar Positioner Dialog */}
+      {displayAvatar && (
+        <AvatarPositioner
+          open={showPositioner}
+          onOpenChange={setShowPositioner}
+          imageUrl={displayAvatar}
+          initialPosition={avatarPosition}
+          onConfirm={setAvatarPosition}
+        />
+      )}
     </MainLayout>
   );
 };
