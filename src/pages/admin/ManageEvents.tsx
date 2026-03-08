@@ -33,6 +33,13 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
   Camera,
   Edit,
   MoreVertical,
@@ -41,21 +48,29 @@ import {
   XCircle,
   Filter,
   RefreshCw,
+  ChevronLeft,
+  ChevronRight,
+  CalendarDays,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { UpdateStatusDialog } from '@/components/events/UpdateStatusDialog';
+
+const thaiMonths = [
+  'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
+  'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
+];
 
 const statusConfig = {
   acknowledged: { label: 'รับทราบงาน', variant: 'secondary' as const },
   in_progress: { label: 'ดำเนินงาน', variant: 'default' as const },
   completed: { label: 'เสร็จสิ้นงาน', variant: 'outline' as const },
-  // Legacy statuses for backward compatibility
   pending: { label: 'รอดำเนินการ', variant: 'secondary' as const },
   confirmed: { label: 'ยืนยันแล้ว', variant: 'default' as const },
   cancelled: { label: 'ยกเลิก', variant: 'destructive' as const },
 };
 
 const ManageEvents = () => {
+  const now = new Date();
   const { user, isAdmin, canManageEvents, isLoading: authLoading } = useAuth();
   const { events, isLoading: eventsLoading, deleteEvent, updateEvent, refetch } = useEventsData();
   const { categories, isLoading: categoriesLoading } = useEventCategories();
@@ -64,6 +79,20 @@ const ManageEvents = () => {
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [filterCategoryId, setFilterCategoryId] = useState<string>('all');
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
+  const [selectedYear, setSelectedYear] = useState(now.getFullYear());
+
+  const currentYear = now.getFullYear();
+  const years = Array.from({ length: 6 }, (_, i) => currentYear - 3 + i);
+
+  const navigateMonth = (dir: number) => {
+    let m = selectedMonth + dir;
+    let y = selectedYear;
+    if (m < 0) { m = 11; y--; }
+    if (m > 11) { m = 0; y++; }
+    setSelectedMonth(m);
+    setSelectedYear(y);
+  };
 
   const handleDelete = async () => {
     if (deleteId) {
@@ -72,9 +101,12 @@ const ManageEvents = () => {
     }
   };
 
-  const filteredEvents = filterCategoryId === 'all' 
-    ? events 
-    : events.filter(e => e.category_id === filterCategoryId);
+  const filteredEvents = events.filter(e => {
+    const eventDate = new Date(e.date);
+    const matchMonth = eventDate.getMonth() === selectedMonth && eventDate.getFullYear() === selectedYear;
+    const matchCategory = filterCategoryId === 'all' || e.category_id === filterCategoryId;
+    return matchMonth && matchCategory;
+  });
 
   const isLoading = authLoading || eventsLoading || categoriesLoading;
 
@@ -123,7 +155,35 @@ const ManageEvents = () => {
               ดู แก้ไข และลบงานทั้งหมด
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
+            <div className="flex items-center gap-1 border border-input rounded-md">
+              <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => navigateMonth(-1)}>
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              <Select value={String(selectedMonth)} onValueChange={(v) => setSelectedMonth(Number(v))}>
+                <SelectTrigger className="w-[120px] border-0 shadow-none h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {thaiMonths.map((m, i) => (
+                    <SelectItem key={i} value={String(i)}>{m}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={String(selectedYear)} onValueChange={(v) => setSelectedYear(Number(v))}>
+                <SelectTrigger className="w-[90px] border-0 shadow-none h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {years.map((y) => (
+                    <SelectItem key={y} value={String(y)}>{y + 543}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => navigateMonth(1)}>
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
             <Button
               variant="outline"
               onClick={() => setStatusDialogOpen(true)}
