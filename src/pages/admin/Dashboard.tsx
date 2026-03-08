@@ -121,7 +121,7 @@ const Dashboard = () => {
     );
   }
 
-  if (!user) {
+  if (!user || !canManageEvents) {
     return (
       <MainLayout>
         <div className="flex items-center justify-center min-h-[60vh]">
