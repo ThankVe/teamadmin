@@ -256,7 +256,7 @@ ${photographersList ? `👥 <b>ผู้รับผิดชอบ:</b> ${photo
 
     // Fetch all active telegram groups from database (reuse supabaseAdmin)
     
-    const { data: groups, error: groupsError } = await supabase
+    const { data: groups, error: groupsError } = await supabaseAdmin
       .from('telegram_groups')
       .select('chat_id, name')
       .eq('is_active', true);
