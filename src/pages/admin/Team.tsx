@@ -68,6 +68,7 @@ const Team = () => {
       phone: newMember.phone || null,
       role: null,
       avatar_url: null,
+      user_id: null,
       is_active: true,
     });
 
