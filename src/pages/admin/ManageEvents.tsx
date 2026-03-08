@@ -101,9 +101,12 @@ const ManageEvents = () => {
     }
   };
 
-  const filteredEvents = filterCategoryId === 'all' 
-    ? events 
-    : events.filter(e => e.category_id === filterCategoryId);
+  const filteredEvents = events.filter(e => {
+    const eventDate = new Date(e.date);
+    const matchMonth = eventDate.getMonth() === selectedMonth && eventDate.getFullYear() === selectedYear;
+    const matchCategory = filterCategoryId === 'all' || e.category_id === filterCategoryId;
+    return matchMonth && matchCategory;
+  });
 
   const isLoading = authLoading || eventsLoading || categoriesLoading;
 
