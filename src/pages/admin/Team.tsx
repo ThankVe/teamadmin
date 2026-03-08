@@ -301,6 +301,7 @@ const Team = () => {
                         src={member.avatar_url} 
                         alt={member.name}
                         className="object-cover"
+                        style={{ objectPosition: member.user_id && avatarPositions[member.user_id] ? `${avatarPositions[member.user_id].split(',')[0]}% ${avatarPositions[member.user_id].split(',')[1]}%` : '50% 50%' }}
                       />
                     )}
                     <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground text-xl">
