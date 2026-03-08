@@ -61,6 +61,7 @@ import {
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { UpdateStatusDialog } from '@/components/events/UpdateStatusDialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const thaiMonths = [
   'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
