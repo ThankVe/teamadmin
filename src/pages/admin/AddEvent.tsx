@@ -82,6 +82,33 @@ const AddEvent = () => {
     setCoverImageLink(link);
     if (link) {
       setFormData(prev => ({ ...prev, cover_image_url: link }));
+      setDriveLink('');
+    }
+  };
+
+  const convertGoogleDriveLink = (link: string): string | null => {
+    // Support formats:
+    // https://drive.google.com/file/d/FILE_ID/view...
+    // https://drive.google.com/open?id=FILE_ID
+    let fileId: string | null = null;
+    const match1 = link.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+    const match2 = link.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (match1) fileId = match1[1];
+    else if (match2) fileId = match2[1];
+    if (fileId) {
+      return `https://lh3.googleusercontent.com/d/${fileId}`;
+    }
+    return null;
+  };
+
+  const handleDriveLinkChange = (link: string) => {
+    setDriveLink(link);
+    if (link) {
+      const directUrl = convertGoogleDriveLink(link);
+      if (directUrl) {
+        setFormData(prev => ({ ...prev, cover_image_url: directUrl }));
+        setCoverImageLink('');
+      }
     }
   };
 
