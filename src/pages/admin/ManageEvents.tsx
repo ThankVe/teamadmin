@@ -79,6 +79,8 @@ const ManageEvents = () => {
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [filterCategoryId, setFilterCategoryId] = useState<string>('all');
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+  const [quickEditOpen, setQuickEditOpen] = useState(false);
+  const [quickEditSearch, setQuickEditSearch] = useState('');
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
 
