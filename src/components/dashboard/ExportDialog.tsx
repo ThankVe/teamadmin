@@ -10,7 +10,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Download, FileSpreadsheet, FileText, Calendar, CheckCircle, Clock, Camera } from 'lucide-react';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 
 interface EventData {
   id: string;
@@ -68,61 +69,48 @@ export const ExportDialog = ({
     }
   };
 
-  const exportToExcel = () => {
-    const data = events.map((event, index) => ({
-      'ลำดับ': index + 1,
-      'ชื่องาน': event.title,
-      'กิจกรรม': event.activity_name,
-      'วันที่': formatThaiDate(event.date),
-      'เวลาเริ่ม': event.start_time,
-      'เวลาสิ้นสุด': event.end_time,
-      'สถานที่': event.location || '-',
-      'สถานะ': getStatusLabel(event.status),
-    }));
+  const exportToExcel = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('รายงานงาน');
 
-    // Add summary rows
-    const allData = [
-      ...data,
-      {
-        'ลำดับ': '' as string | number,
-        'ชื่องาน': '',
-        'กิจกรรม': '',
-        'วันที่': '',
-        'เวลาเริ่ม': '',
-        'เวลาสิ้นสุด': '',
-        'สถานที่': '',
-        'สถานะ': '',
-      },
-      {
-        'ลำดับ': 'สรุป' as string | number,
-        'ชื่องาน': `งานทั้งหมด: ${stats.total}`,
-        'กิจกรรม': `รอดำเนินการ: ${stats.pending}`,
-        'วันที่': `ยืนยันแล้ว: ${stats.confirmed}`,
-        'เวลาเริ่ม': `เสร็จสิ้น: ${stats.completed}`,
-        'เวลาสิ้นสุด': `ยกเลิก: ${stats.cancelled}`,
-        'สถานที่': '',
-        'สถานะ': '',
-      },
+    worksheet.columns = [
+      { header: 'ลำดับ', key: 'index', width: 8 },
+      { header: 'ชื่องาน', key: 'title', width: 30 },
+      { header: 'กิจกรรม', key: 'activity', width: 25 },
+      { header: 'วันที่', key: 'date', width: 20 },
+      { header: 'เวลาเริ่ม', key: 'start', width: 12 },
+      { header: 'เวลาสิ้นสุด', key: 'end', width: 12 },
+      { header: 'สถานที่', key: 'location', width: 25 },
+      { header: 'สถานะ', key: 'status', width: 15 },
     ];
 
-    const ws = XLSX.utils.json_to_sheet(allData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'รายงานงาน');
-    
-    // Set column widths
-    ws['!cols'] = [
-      { wch: 6 },  // ลำดับ
-      { wch: 30 }, // ชื่องาน
-      { wch: 25 }, // กิจกรรม
-      { wch: 20 }, // วันที่
-      { wch: 12 }, // เวลาเริ่ม
-      { wch: 12 }, // เวลาสิ้นสุด
-      { wch: 25 }, // สถานที่
-      { wch: 15 }, // สถานะ
-    ];
+    events.forEach((event, index) => {
+      worksheet.addRow({
+        index: index + 1,
+        title: event.title,
+        activity: event.activity_name,
+        date: formatThaiDate(event.date),
+        start: event.start_time,
+        end: event.end_time,
+        location: event.location || '-',
+        status: getStatusLabel(event.status),
+      });
+    });
+
+    // Add summary
+    worksheet.addRow({});
+    worksheet.addRow({
+      index: 'สรุป',
+      title: `งานทั้งหมด: ${stats.total}`,
+      activity: `รอดำเนินการ: ${stats.pending}`,
+      date: `ยืนยันแล้ว: ${stats.confirmed}`,
+      start: `เสร็จสิ้น: ${stats.completed}`,
+      end: `ยกเลิก: ${stats.cancelled}`,
+    });
 
     const fileName = `รายงานงาน_${months[selectedMonth]}_${selectedYear + 543}.xlsx`;
-    XLSX.writeFile(wb, fileName);
+    const buffer = await workbook.xlsx.writeBuffer();
+    saveAs(new Blob([buffer]), fileName);
   };
 
   const printReport = () => {
