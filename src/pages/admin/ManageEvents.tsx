@@ -8,6 +8,13 @@ import { EditEventDialog } from '@/components/events/EditEventDialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import {
   Table,
   TableBody,
@@ -51,9 +58,11 @@ import {
   ChevronLeft,
   ChevronRight,
   CalendarDays,
+  Search,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { UpdateStatusDialog } from '@/components/events/UpdateStatusDialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const thaiMonths = [
   'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
@@ -79,6 +88,8 @@ const ManageEvents = () => {
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [filterCategoryId, setFilterCategoryId] = useState<string>('all');
   const [statusDialogOpen, setStatusDialogOpen] = useState(false);
+  const [quickEditOpen, setQuickEditOpen] = useState(false);
+  const [quickEditSearch, setQuickEditSearch] = useState('');
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
 
@@ -184,6 +195,14 @@ const ManageEvents = () => {
                 <ChevronRight className="w-4 h-4" />
               </Button>
             </div>
+            <Button
+              variant="outline"
+              onClick={() => { setQuickEditOpen(true); setQuickEditSearch(''); }}
+              className="gap-2"
+            >
+              <Edit className="w-4 h-4" />
+              แก้ไขงาน
+            </Button>
             <Button
               variant="outline"
               onClick={() => setStatusDialogOpen(true)}
@@ -368,6 +387,70 @@ const ManageEvents = () => {
           onOpenChange={setStatusDialogOpen}
           onStatusUpdated={refetch}
         />
+
+        {/* Quick Edit Dialog */}
+        <Dialog open={quickEditOpen} onOpenChange={setQuickEditOpen}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Edit className="w-5 h-5 text-primary" />
+                เลือกงานที่ต้องการแก้ไข
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="ค้นหางาน..."
+                  value={quickEditSearch}
+                  onChange={(e) => setQuickEditSearch(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+              <ScrollArea className="max-h-[400px]">
+                <div className="space-y-2">
+                  {events
+                    .filter(e => {
+                      const q = quickEditSearch.toLowerCase();
+                      return !q || e.title.toLowerCase().includes(q) || e.activity_name.toLowerCase().includes(q);
+                    })
+                    .map((event) => {
+                      const status = statusConfig[event.status as keyof typeof statusConfig] || statusConfig.acknowledged;
+                      return (
+                        <button
+                          key={event.id}
+                          className="w-full text-left p-3 rounded-lg border border-border hover:border-primary/50 hover:bg-accent/50 transition-colors"
+                          onClick={() => {
+                            setQuickEditOpen(false);
+                            setEditingEvent(event);
+                          }}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                              <p className="font-medium truncate">{event.title}</p>
+                              <p className="text-sm text-muted-foreground truncate">{event.activity_name}</p>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0">
+                              <span className="text-xs text-muted-foreground">
+                                {new Date(event.date).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' })}
+                              </span>
+                              <Badge variant={status.variant} className="text-xs">{status.label}</Badge>
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  {events.filter(e => {
+                    const q = quickEditSearch.toLowerCase();
+                    return !q || e.title.toLowerCase().includes(q) || e.activity_name.toLowerCase().includes(q);
+                  }).length === 0 && (
+                    <p className="text-center text-muted-foreground py-8">ไม่พบงาน</p>
+                  )}
+                </div>
+              </ScrollArea>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </MainLayout>
   );
