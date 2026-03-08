@@ -167,34 +167,6 @@ const ManageEvents = () => {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <div className="flex items-center gap-1 border border-input rounded-md">
-              <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => navigateMonth(-1)}>
-                <ChevronLeft className="w-4 h-4" />
-              </Button>
-              <Select value={String(selectedMonth)} onValueChange={(v) => setSelectedMonth(Number(v))}>
-                <SelectTrigger className="w-[120px] border-0 shadow-none h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {thaiMonths.map((m, i) => (
-                    <SelectItem key={i} value={String(i)}>{m}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={String(selectedYear)} onValueChange={(v) => setSelectedYear(Number(v))}>
-                <SelectTrigger className="w-[90px] border-0 shadow-none h-9">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {years.map((y) => (
-                    <SelectItem key={y} value={String(y)}>{y + 543}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => navigateMonth(1)}>
-                <ChevronRight className="w-4 h-4" />
-              </Button>
-            </div>
             <Button
               variant="outline"
               onClick={() => { setQuickEditOpen(true); setQuickEditSearch(''); }}
@@ -222,20 +194,50 @@ const ManageEvents = () => {
         </div>
 
         {/* Filter */}
-        <div className="flex items-center gap-3">
-          <Filter className="w-4 h-4 text-muted-foreground" />
-          <select
-            value={filterCategoryId}
-            onChange={(e) => setFilterCategoryId(e.target.value)}
-            className="h-10 w-[200px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-          >
-            <option value="all">ทุกประเภท</option>
-            {categories.map((cat) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.name}
-              </option>
-            ))}
-          </select>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-1 border border-input rounded-md">
+            <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => navigateMonth(-1)}>
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+            <Select value={String(selectedMonth)} onValueChange={(v) => setSelectedMonth(Number(v))}>
+              <SelectTrigger className="w-[120px] border-0 shadow-none h-9">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {thaiMonths.map((m, i) => (
+                  <SelectItem key={i} value={String(i)}>{m}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={String(selectedYear)} onValueChange={(v) => setSelectedYear(Number(v))}>
+              <SelectTrigger className="w-[90px] border-0 shadow-none h-9">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {years.map((y) => (
+                  <SelectItem key={y} value={String(y)}>{y + 543}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => navigateMonth(1)}>
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+          <div className="flex items-center gap-2">
+            <Filter className="w-4 h-4 text-muted-foreground" />
+            <select
+              value={filterCategoryId}
+              onChange={(e) => setFilterCategoryId(e.target.value)}
+              className="h-9 w-[180px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            >
+              <option value="all">ทุกประเภท</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
+          </div>
           {filterCategoryId !== 'all' && (
             <Button
               variant="ghost"
