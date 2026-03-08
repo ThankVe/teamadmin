@@ -1,4 +1,5 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTeamMembers } from '@/hooks/useTeamMembers';
@@ -40,6 +41,22 @@ const Team = () => {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [newMember, setNewMember] = useState({ name: '', email: '', phone: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [avatarPositions, setAvatarPositions] = useState<Record<string, string>>({});
+
+  // Fetch avatar positions for team members
+  useEffect(() => {
+    const fetchPositions = async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('user_id, avatar_position');
+      if (data) {
+        const map: Record<string, string> = {};
+        data.forEach(p => { if (p.avatar_position) map[p.user_id] = p.avatar_position; });
+        setAvatarPositions(map);
+      }
+    };
+    fetchPositions();
+  }, [teamMembers]);
 
   const handleAddMember = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,6 +68,7 @@ const Team = () => {
       phone: newMember.phone || null,
       role: null,
       avatar_url: null,
+      user_id: null,
       is_active: true,
     });
 
@@ -284,6 +302,7 @@ const Team = () => {
                         src={member.avatar_url} 
                         alt={member.name}
                         className="object-cover"
+                        style={{ objectPosition: member.user_id && avatarPositions[member.user_id] ? `${avatarPositions[member.user_id].split(',')[0]}% ${avatarPositions[member.user_id].split(',')[1]}%` : '50% 50%' }}
                       />
                     )}
                     <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground text-xl">

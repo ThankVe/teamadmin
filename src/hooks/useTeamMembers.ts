@@ -9,6 +9,7 @@ export interface TeamMember {
   phone: string | null;
   role: string | null;
   avatar_url: string | null;
+  user_id: string | null;
   is_active: boolean | null;
   created_at: string;
   updated_at: string;
