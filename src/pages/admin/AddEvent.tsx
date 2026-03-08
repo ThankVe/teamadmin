@@ -268,6 +268,20 @@ const AddEvent = () => {
                     onChange={(e) => handleCoverLinkChange(e.target.value)}
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="driveLink" className="text-sm text-muted-foreground flex items-center gap-1.5">
+                    หรือใส่ลิงก์จาก Google Drive
+                  </Label>
+                  <Input
+                    id="driveLink"
+                    placeholder="https://drive.google.com/file/d/xxxxx/view"
+                    value={driveLink}
+                    onChange={(e) => handleDriveLinkChange(e.target.value)}
+                  />
+                  {driveLink && !convertGoogleDriveLink(driveLink) && (
+                    <p className="text-xs text-destructive">รูปแบบลิงก์ Google Drive ไม่ถูกต้อง</p>
+                  )}
+                </div>
               </div>
 
               {/* Date & Time */}
