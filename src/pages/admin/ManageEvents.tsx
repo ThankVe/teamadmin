@@ -197,6 +197,14 @@ const ManageEvents = () => {
             </div>
             <Button
               variant="outline"
+              onClick={() => { setQuickEditOpen(true); setQuickEditSearch(''); }}
+              className="gap-2"
+            >
+              <Edit className="w-4 h-4" />
+              แก้ไขงาน
+            </Button>
+            <Button
+              variant="outline"
               onClick={() => setStatusDialogOpen(true)}
               className="gap-2"
             >
