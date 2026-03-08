@@ -58,6 +58,7 @@ import {
   ChevronLeft,
   ChevronRight,
   CalendarDays,
+  Search,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { UpdateStatusDialog } from '@/components/events/UpdateStatusDialog';
