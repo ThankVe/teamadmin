@@ -16,7 +16,7 @@ const months = [
 ];
 
 const Dashboard = () => {
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, canManageEvents, isLoading: authLoading } = useAuth();
   const { events, isLoading: eventsLoading } = useEventsData();
   
   const currentDate = new Date();
