@@ -46,6 +46,7 @@ const AddEvent = () => {
   const [selectedPhotographers, setSelectedPhotographers] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [coverImageLink, setCoverImageLink] = useState('');
+  const [driveLink, setDriveLink] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
