@@ -155,7 +155,35 @@ const ManageEvents = () => {
               ดู แก้ไข และลบงานทั้งหมด
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
+            <div className="flex items-center gap-1 border border-input rounded-md">
+              <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => navigateMonth(-1)}>
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              <Select value={String(selectedMonth)} onValueChange={(v) => setSelectedMonth(Number(v))}>
+                <SelectTrigger className="w-[120px] border-0 shadow-none h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {thaiMonths.map((m, i) => (
+                    <SelectItem key={i} value={String(i)}>{m}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={String(selectedYear)} onValueChange={(v) => setSelectedYear(Number(v))}>
+                <SelectTrigger className="w-[90px] border-0 shadow-none h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {years.map((y) => (
+                    <SelectItem key={y} value={String(y)}>{y + 543}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => navigateMonth(1)}>
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
             <Button
               variant="outline"
               onClick={() => setStatusDialogOpen(true)}
