@@ -41,6 +41,22 @@ const Team = () => {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [newMember, setNewMember] = useState({ name: '', email: '', phone: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [avatarPositions, setAvatarPositions] = useState<Record<string, string>>({});
+
+  // Fetch avatar positions for team members
+  useEffect(() => {
+    const fetchPositions = async () => {
+      const { data } = await supabase
+        .from('profiles')
+        .select('user_id, avatar_position');
+      if (data) {
+        const map: Record<string, string> = {};
+        data.forEach(p => { if (p.avatar_position) map[p.user_id] = p.avatar_position; });
+        setAvatarPositions(map);
+      }
+    };
+    fetchPositions();
+  }, [teamMembers]);
 
   const handleAddMember = async (e: React.FormEvent) => {
     e.preventDefault();
