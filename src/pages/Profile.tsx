@@ -113,7 +113,7 @@ const Profile = () => {
 
       // Upload avatar if pending
       if (pendingAvatarFile) {
-        const { url, error } = await uploadImage(pendingAvatarFile, 'avatars');
+        const { url, error } = await uploadImage(pendingAvatarFile, 'avatars', user?.id);
         if (!error && url) {
           avatarUrl = url;
         }

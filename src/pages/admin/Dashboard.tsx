@@ -16,7 +16,7 @@ const months = [
 ];
 
 const Dashboard = () => {
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, canManageEvents, isLoading: authLoading } = useAuth();
   const { events, isLoading: eventsLoading } = useEventsData();
   
   const currentDate = new Date();
@@ -121,7 +121,7 @@ const Dashboard = () => {
     );
   }
 
-  if (!user) {
+  if (!user || !canManageEvents) {
     return (
       <MainLayout>
         <div className="flex items-center justify-center min-h-[60vh]">
