@@ -60,10 +60,9 @@ export const ExportDialog = ({
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'pending': return 'รอดำเนินการ';
-      case 'confirmed': return 'ยืนยันแล้ว';
-      case 'completed': return 'เสร็จสิ้น';
-      case 'cancelled': return 'ยกเลิก';
+      case 'acknowledged': return 'รับทราบงาน';
+      case 'in_progress': return 'ดำเนินงาน';
+      case 'completed': return 'เสร็จสิ้นงาน';
       default: return status;
     }
   };
