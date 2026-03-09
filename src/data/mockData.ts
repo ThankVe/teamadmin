@@ -32,7 +32,7 @@ export const mockEvents: EventItem[] = [
     location: 'สนามกีฬากลาง',
     description: 'การแข่งขันกีฬาระหว่างคณะ',
     photographers: [teamMembers[0], teamMembers[2], teamMembers[3]],
-    status: 'pending',
+    status: 'acknowledged',
     createdAt: '2026-01-22',
   },
   {
