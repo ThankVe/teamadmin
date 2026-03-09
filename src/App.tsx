@@ -37,6 +37,7 @@ const App = () => (
             <Route path="/events" element={<Events />} />
             <Route path="/event/:id" element={<EventDetail />} />
             <Route path="/admin/dashboard" element={<Dashboard />} />
+            <Route path="/admin/team-dashboard" element={<TeamDashboard />} />
             <Route path="/admin/add-event" element={<AddEvent />} />
             <Route path="/admin/manage-events" element={<ManageEvents />} />
             <Route path="/admin/categories" element={<Categories />} />
