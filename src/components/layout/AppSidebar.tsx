@@ -13,8 +13,7 @@ import {
   ChevronRight,
   FolderOpen,
   User,
-  UsersRound,
-  BarChart3
+  UsersRound
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
