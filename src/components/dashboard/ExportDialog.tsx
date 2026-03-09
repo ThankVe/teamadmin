@@ -408,9 +408,8 @@ export const ExportDialog = ({
                       </div>
                     </div>
                     <Badge variant={
-                      event.status === 'confirmed' ? 'default' :
-                      event.status === 'completed' ? 'outline' :
-                      event.status === 'cancelled' ? 'destructive' : 'secondary'
+                      event.status === 'in_progress' ? 'default' :
+                      event.status === 'completed' ? 'outline' : 'secondary'
                     } className="text-xs">
                       {getStatusLabel(event.status)}
                     </Badge>
