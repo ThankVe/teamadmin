@@ -19,7 +19,7 @@ export const mockEvents: EventItem[] = [
     location: 'หอประชุมใหญ่',
     description: 'งานต้อนรับนักศึกษาใหม่ทุกคณะ',
     photographers: [teamMembers[0], teamMembers[1]],
-    status: 'confirmed',
+    status: 'acknowledged',
     createdAt: '2026-01-20',
   },
   {
@@ -32,7 +32,7 @@ export const mockEvents: EventItem[] = [
     location: 'สนามกีฬากลาง',
     description: 'การแข่งขันกีฬาระหว่างคณะ',
     photographers: [teamMembers[0], teamMembers[2], teamMembers[3]],
-    status: 'pending',
+    status: 'acknowledged',
     createdAt: '2026-01-22',
   },
   {
@@ -45,7 +45,7 @@ export const mockEvents: EventItem[] = [
     location: 'ห้องประชุม 101',
     description: 'งานประชุมนำเสนอผลงานวิจัย',
     photographers: [teamMembers[1], teamMembers[4]],
-    status: 'confirmed',
+    status: 'in_progress',
     createdAt: '2026-01-25',
   },
   {
@@ -57,7 +57,7 @@ export const mockEvents: EventItem[] = [
     endTime: '14:00',
     location: 'หอประชุมใหญ่',
     photographers: [teamMembers[0], teamMembers[1], teamMembers[2]],
-    status: 'pending',
+    status: 'acknowledged',
     createdAt: '2026-01-28',
   },
   {
@@ -88,10 +88,9 @@ export const getEventsByMonth = (events: EventItem[], year: number, month: numbe
 
 export const getEventsStats = (events: EventItem[]) => {
   const total = events.length;
-  const pending = events.filter(e => e.status === 'pending').length;
-  const confirmed = events.filter(e => e.status === 'confirmed').length;
+  const acknowledged = events.filter(e => e.status === 'acknowledged').length;
+  const in_progress = events.filter(e => e.status === 'in_progress').length;
   const completed = events.filter(e => e.status === 'completed').length;
-  const cancelled = events.filter(e => e.status === 'cancelled').length;
   
-  return { total, pending, confirmed, completed, cancelled };
+  return { total, acknowledged, in_progress, completed };
 };

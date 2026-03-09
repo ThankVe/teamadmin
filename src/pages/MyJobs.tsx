@@ -57,7 +57,7 @@ const MyJobs = () => {
     location: event.location,
     description: event.description,
     photographers: event.photographers || [],
-    status: event.status as 'pending' | 'confirmed' | 'completed' | 'cancelled',
+    status: event.status as 'acknowledged' | 'in_progress' | 'completed',
     createdAt: event.created_at,
     coverImage: event.cover_image_url,
   });
@@ -69,7 +69,7 @@ const MyJobs = () => {
 
     const upcoming = myEvents.filter(event => {
       const eventDate = new Date(event.date);
-      return eventDate >= now && event.status !== 'completed' && event.status !== 'cancelled';
+      return eventDate >= now && event.status !== 'completed';
     }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
     const past = myEvents.filter(event => {
@@ -141,7 +141,7 @@ const MyJobs = () => {
               <div className="flex items-center gap-3">
                 <div className="w-3 h-3 rounded-full bg-yellow-500" />
                 <div>
-                  <p className="text-2xl font-bold">{myEvents.filter(e => e.status === 'acknowledged' || e.status === 'pending').length}</p>
+                  <p className="text-2xl font-bold">{myEvents.filter(e => e.status === 'acknowledged').length}</p>
                   <p className="text-xs text-muted-foreground">รับทราบงาน</p>
                 </div>
               </div>
@@ -152,7 +152,7 @@ const MyJobs = () => {
               <div className="flex items-center gap-3">
                 <div className="w-3 h-3 rounded-full bg-blue-500" />
                 <div>
-                  <p className="text-2xl font-bold">{myEvents.filter(e => e.status === 'in_progress' || e.status === 'confirmed').length}</p>
+                  <p className="text-2xl font-bold">{myEvents.filter(e => e.status === 'in_progress').length}</p>
                   <p className="text-xs text-muted-foreground">ดำเนินงาน</p>
                 </div>
               </div>

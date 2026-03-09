@@ -12,10 +12,9 @@ import { cn } from '@/lib/utils';
 
 const statusFilters = [
   { value: 'all', label: 'ทั้งหมด' },
-  { value: 'pending', label: 'รอดำเนินการ' },
-  { value: 'confirmed', label: 'ยืนยันแล้ว' },
-  { value: 'completed', label: 'เสร็จสิ้น' },
-  { value: 'cancelled', label: 'ยกเลิก' },
+  { value: 'acknowledged', label: 'รับทราบงาน' },
+  { value: 'in_progress', label: 'ดำเนินงาน' },
+  { value: 'completed', label: 'เสร็จสิ้นงาน' },
 ];
 
 const thaiMonths = [
@@ -81,7 +80,7 @@ const Events = () => {
     location: event.location,
     description: event.description,
     photographers: event.photographers || [],
-    status: event.status as 'pending' | 'confirmed' | 'completed' | 'cancelled',
+    status: event.status as 'acknowledged' | 'in_progress' | 'completed',
     createdAt: event.created_at,
     coverImage: event.cover_image_url,
   }));

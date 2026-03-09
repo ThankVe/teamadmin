@@ -14,7 +14,7 @@ export interface EventItem {
   location?: string;
   description?: string;
   photographers: TeamMember[];
-  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+  status: 'acknowledged' | 'in_progress' | 'completed';
   createdAt: string;
   coverImage?: string;
 }

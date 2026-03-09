@@ -73,9 +73,6 @@ const statusConfig = {
   acknowledged: { label: 'รับทราบงาน', variant: 'secondary' as const },
   in_progress: { label: 'ดำเนินงาน', variant: 'default' as const },
   completed: { label: 'เสร็จสิ้นงาน', variant: 'outline' as const },
-  pending: { label: 'รอดำเนินการ', variant: 'secondary' as const },
-  confirmed: { label: 'ยืนยันแล้ว', variant: 'default' as const },
-  cancelled: { label: 'ยกเลิก', variant: 'destructive' as const },
 };
 
 const ManageEvents = () => {

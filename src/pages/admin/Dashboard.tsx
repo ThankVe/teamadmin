@@ -36,20 +36,18 @@ const Dashboard = () => {
 
   const stats = useMemo(() => {
     const total = monthlyEvents.length;
-     const pending = monthlyEvents.filter(e => e.status === 'pending' || e.status === 'acknowledged').length;
-     const confirmed = monthlyEvents.filter(e => e.status === 'confirmed' || e.status === 'in_progress').length;
+    const acknowledged = monthlyEvents.filter(e => e.status === 'acknowledged').length;
+    const in_progress = monthlyEvents.filter(e => e.status === 'in_progress').length;
     const completed = monthlyEvents.filter(e => e.status === 'completed').length;
-    const cancelled = monthlyEvents.filter(e => e.status === 'cancelled').length;
-    return { total, pending, confirmed, completed, cancelled };
+    return { total, acknowledged, in_progress, completed };
   }, [monthlyEvents]);
 
   const allStats = useMemo(() => {
     const total = events.length;
-     const pending = events.filter(e => e.status === 'pending' || e.status === 'acknowledged').length;
-     const confirmed = events.filter(e => e.status === 'confirmed' || e.status === 'in_progress').length;
+    const acknowledged = events.filter(e => e.status === 'acknowledged').length;
+    const in_progress = events.filter(e => e.status === 'in_progress').length;
     const completed = events.filter(e => e.status === 'completed').length;
-    const cancelled = events.filter(e => e.status === 'cancelled').length;
-    return { total, pending, confirmed, completed, cancelled };
+    return { total, acknowledged, in_progress, completed };
   }, [events]);
 
   // Generate monthly chart data for selected year
@@ -78,18 +76,18 @@ const Dashboard = () => {
       bgColor: 'bg-primary/10',
     },
     {
-      title: 'รอดำเนินการ',
-      value: stats.pending,
+      title: 'รับทราบงาน',
+      value: stats.acknowledged,
       icon: Clock,
       color: 'text-yellow-600',
       bgColor: 'bg-yellow-100',
     },
     {
-      title: 'ยืนยันแล้ว',
-      value: stats.confirmed,
+      title: 'ดำเนินงาน',
+      value: stats.in_progress,
       icon: Camera,
-      color: 'text-green-600',
-      bgColor: 'bg-green-100',
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-100',
     },
     {
       title: 'เสร็จสิ้น',
@@ -279,12 +277,12 @@ const Dashboard = () => {
                 <p className="text-sm text-muted-foreground">งานทั้งหมด</p>
               </div>
               <div className="text-center p-4 rounded-xl bg-amber-500/10">
-                <p className="text-3xl font-bold text-amber-600">{allStats.pending}</p>
-                <p className="text-sm text-muted-foreground">รอดำเนินการ</p>
+                <p className="text-3xl font-bold text-amber-600">{allStats.acknowledged}</p>
+                <p className="text-sm text-muted-foreground">รับทราบงาน</p>
               </div>
-              <div className="text-center p-4 rounded-xl bg-emerald-500/10">
-                <p className="text-3xl font-bold text-emerald-600">{allStats.confirmed}</p>
-                <p className="text-sm text-muted-foreground">ยืนยันแล้ว</p>
+              <div className="text-center p-4 rounded-xl bg-blue-500/10">
+                <p className="text-3xl font-bold text-blue-600">{allStats.in_progress}</p>
+                <p className="text-sm text-muted-foreground">ดำเนินงาน</p>
               </div>
               <div className="text-center p-4 rounded-xl bg-muted">
                 <p className="text-3xl font-bold text-muted-foreground">{allStats.completed}</p>
@@ -322,14 +320,12 @@ const Dashboard = () => {
                       </p>
                     </div>
                     <Badge variant={
-                      event.status === 'confirmed' ? 'default' :
-                      event.status === 'completed' ? 'outline' :
-                      event.status === 'cancelled' ? 'destructive' : 'secondary'
+                      event.status === 'in_progress' ? 'default' :
+                      event.status === 'completed' ? 'outline' : 'secondary'
                     }>
-                      {event.status === 'pending' && 'รอดำเนินการ'}
-                      {event.status === 'confirmed' && 'ยืนยันแล้ว'}
-                      {event.status === 'completed' && 'เสร็จสิ้น'}
-                      {event.status === 'cancelled' && 'ยกเลิก'}
+                      {event.status === 'acknowledged' && 'รับทราบงาน'}
+                      {event.status === 'in_progress' && 'ดำเนินงาน'}
+                      {event.status === 'completed' && 'เสร็จสิ้นงาน'}
                     </Badge>
                   </div>
                 ))}

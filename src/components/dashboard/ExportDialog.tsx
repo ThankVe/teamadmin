@@ -26,10 +26,9 @@ interface EventData {
 
 interface ExportStats {
   total: number;
-  pending: number;
-  confirmed: number;
+  acknowledged: number;
+  in_progress: number;
   completed: number;
-  cancelled: number;
 }
 
 interface ExportDialogProps {
@@ -61,10 +60,9 @@ export const ExportDialog = ({
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'pending': return 'รอดำเนินการ';
-      case 'confirmed': return 'ยืนยันแล้ว';
-      case 'completed': return 'เสร็จสิ้น';
-      case 'cancelled': return 'ยกเลิก';
+      case 'acknowledged': return 'รับทราบงาน';
+      case 'in_progress': return 'ดำเนินงาน';
+      case 'completed': return 'เสร็จสิ้นงาน';
       default: return status;
     }
   };
@@ -102,10 +100,10 @@ export const ExportDialog = ({
     worksheet.addRow({
       index: 'สรุป',
       title: `งานทั้งหมด: ${stats.total}`,
-      activity: `รอดำเนินการ: ${stats.pending}`,
-      date: `ยืนยันแล้ว: ${stats.confirmed}`,
-      start: `เสร็จสิ้น: ${stats.completed}`,
-      end: `ยกเลิก: ${stats.cancelled}`,
+      activity: `รับทราบงาน: ${stats.acknowledged}`,
+      date: `ดำเนินงาน: ${stats.in_progress}`,
+      start: `เสร็จสิ้นงาน: ${stats.completed}`,
+      end: '',
     });
 
     const fileName = `รายงานงาน_${months[selectedMonth]}_${selectedYear + 543}.xlsx`;
@@ -191,10 +189,9 @@ export const ExportDialog = ({
               font-size: 12px;
               font-weight: 500;
             }
-            .status-pending { background: #fef3c7; color: #92400e; }
-            .status-confirmed { background: #d1fae5; color: #065f46; }
-            .status-completed { background: #e5e7eb; color: #374151; }
-            .status-cancelled { background: #fee2e2; color: #991b1b; }
+            .status-acknowledged { background: #fef3c7; color: #92400e; }
+            .status-in_progress { background: #dbeafe; color: #1e40af; }
+            .status-completed { background: #d1fae5; color: #065f46; }
             .footer {
               margin-top: 30px;
               text-align: center;
@@ -221,12 +218,12 @@ export const ExportDialog = ({
               <div class="stat-label">งานทั้งหมด</div>
             </div>
             <div class="stat-card warning">
-              <div class="stat-value">${stats.pending}</div>
-              <div class="stat-label">รอดำเนินการ</div>
+              <div class="stat-value">${stats.acknowledged}</div>
+              <div class="stat-label">รับทราบงาน</div>
             </div>
             <div class="stat-card success">
-              <div class="stat-value">${stats.confirmed}</div>
-              <div class="stat-label">ยืนยันแล้ว</div>
+              <div class="stat-value">${stats.in_progress}</div>
+              <div class="stat-label">ดำเนินงาน</div>
             </div>
             <div class="stat-card muted">
               <div class="stat-value">${stats.completed}</div>
@@ -362,15 +359,15 @@ export const ExportDialog = ({
               <div className="flex justify-center mb-2">
                 <Clock className="w-5 h-5 text-amber-600" />
               </div>
-              <p className="text-2xl font-bold text-amber-600">{stats.pending}</p>
-              <p className="text-xs text-muted-foreground">รอดำเนินการ</p>
+              <p className="text-2xl font-bold text-amber-600">{stats.acknowledged}</p>
+              <p className="text-xs text-muted-foreground">รับทราบงาน</p>
             </div>
-            <div className="text-center p-3 rounded-xl bg-emerald-100">
+            <div className="text-center p-3 rounded-xl bg-blue-100">
               <div className="flex justify-center mb-2">
-                <Camera className="w-5 h-5 text-emerald-600" />
+                <Camera className="w-5 h-5 text-blue-600" />
               </div>
-              <p className="text-2xl font-bold text-emerald-600">{stats.confirmed}</p>
-              <p className="text-xs text-muted-foreground">ยืนยันแล้ว</p>
+              <p className="text-2xl font-bold text-blue-600">{stats.in_progress}</p>
+              <p className="text-xs text-muted-foreground">ดำเนินงาน</p>
             </div>
             <div className="text-center p-3 rounded-xl bg-muted">
               <div className="flex justify-center mb-2">
@@ -411,9 +408,8 @@ export const ExportDialog = ({
                       </div>
                     </div>
                     <Badge variant={
-                      event.status === 'confirmed' ? 'default' :
-                      event.status === 'completed' ? 'outline' :
-                      event.status === 'cancelled' ? 'destructive' : 'secondary'
+                      event.status === 'in_progress' ? 'default' :
+                      event.status === 'completed' ? 'outline' : 'secondary'
                     } className="text-xs">
                       {getStatusLabel(event.status)}
                     </Badge>
