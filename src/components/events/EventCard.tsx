@@ -14,11 +14,8 @@ interface EventCardProps {
 
 const statusConfig: Record<string, { label: string; color: string; bgColor: string }> = {
   acknowledged: { label: 'รับทราบงาน', color: 'text-yellow-700', bgColor: 'bg-yellow-500' },
-  pending: { label: 'รอดำเนินการ', color: 'text-yellow-700', bgColor: 'bg-yellow-500' },
   in_progress: { label: 'ดำเนินงาน', color: 'text-blue-700', bgColor: 'bg-blue-500' },
-  confirmed: { label: 'ยืนยันแล้ว', color: 'text-blue-700', bgColor: 'bg-blue-500' },
   completed: { label: 'เสร็จสิ้นงาน', color: 'text-green-700', bgColor: 'bg-green-500' },
-  cancelled: { label: 'ยกเลิก', color: 'text-red-700', bgColor: 'bg-red-500' },
 };
 
 const defaultStatus = { label: 'ไม่ระบุ', color: 'text-gray-700', bgColor: 'bg-gray-500' };
