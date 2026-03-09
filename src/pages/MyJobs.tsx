@@ -141,7 +141,7 @@ const MyJobs = () => {
               <div className="flex items-center gap-3">
                 <div className="w-3 h-3 rounded-full bg-yellow-500" />
                 <div>
-                  <p className="text-2xl font-bold">{myEvents.filter(e => e.status === 'acknowledged' || e.status === 'pending').length}</p>
+                  <p className="text-2xl font-bold">{myEvents.filter(e => e.status === 'acknowledged').length}</p>
                   <p className="text-xs text-muted-foreground">รับทราบงาน</p>
                 </div>
               </div>
