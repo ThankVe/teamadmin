@@ -15,7 +15,6 @@ import Categories from "./pages/admin/Categories";
 import Team from "./pages/admin/Team";
 import Settings from "./pages/admin/Settings";
 import UserManagement from "./pages/admin/UserManagement";
-import TeamDashboard from "./pages/admin/TeamDashboard";
 import AdminSetup from "./pages/AdminSetup";
 import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
