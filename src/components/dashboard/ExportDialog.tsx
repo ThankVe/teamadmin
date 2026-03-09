@@ -359,15 +359,15 @@ export const ExportDialog = ({
               <div className="flex justify-center mb-2">
                 <Clock className="w-5 h-5 text-amber-600" />
               </div>
-              <p className="text-2xl font-bold text-amber-600">{stats.pending}</p>
-              <p className="text-xs text-muted-foreground">รอดำเนินการ</p>
+              <p className="text-2xl font-bold text-amber-600">{stats.acknowledged}</p>
+              <p className="text-xs text-muted-foreground">รับทราบงาน</p>
             </div>
-            <div className="text-center p-3 rounded-xl bg-emerald-100">
+            <div className="text-center p-3 rounded-xl bg-blue-100">
               <div className="flex justify-center mb-2">
-                <Camera className="w-5 h-5 text-emerald-600" />
+                <Camera className="w-5 h-5 text-blue-600" />
               </div>
-              <p className="text-2xl font-bold text-emerald-600">{stats.confirmed}</p>
-              <p className="text-xs text-muted-foreground">ยืนยันแล้ว</p>
+              <p className="text-2xl font-bold text-blue-600">{stats.in_progress}</p>
+              <p className="text-xs text-muted-foreground">ดำเนินงาน</p>
             </div>
             <div className="text-center p-3 rounded-xl bg-muted">
               <div className="flex justify-center mb-2">
