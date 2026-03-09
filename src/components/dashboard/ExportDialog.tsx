@@ -100,10 +100,10 @@ export const ExportDialog = ({
     worksheet.addRow({
       index: 'สรุป',
       title: `งานทั้งหมด: ${stats.total}`,
-      activity: `รอดำเนินการ: ${stats.pending}`,
-      date: `ยืนยันแล้ว: ${stats.confirmed}`,
-      start: `เสร็จสิ้น: ${stats.completed}`,
-      end: `ยกเลิก: ${stats.cancelled}`,
+      activity: `รับทราบงาน: ${stats.acknowledged}`,
+      date: `ดำเนินงาน: ${stats.in_progress}`,
+      start: `เสร็จสิ้นงาน: ${stats.completed}`,
+      end: '',
     });
 
     const fileName = `รายงานงาน_${months[selectedMonth]}_${selectedYear + 543}.xlsx`;
