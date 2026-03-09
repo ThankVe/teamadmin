@@ -12,10 +12,9 @@ import { cn } from '@/lib/utils';
 
 const statusFilters = [
   { value: 'all', label: 'ทั้งหมด' },
-  { value: 'pending', label: 'รอดำเนินการ' },
-  { value: 'confirmed', label: 'ยืนยันแล้ว' },
-  { value: 'completed', label: 'เสร็จสิ้น' },
-  { value: 'cancelled', label: 'ยกเลิก' },
+  { value: 'acknowledged', label: 'รับทราบงาน' },
+  { value: 'in_progress', label: 'ดำเนินงาน' },
+  { value: 'completed', label: 'เสร็จสิ้นงาน' },
 ];
 
 const thaiMonths = [
