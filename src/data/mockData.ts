@@ -19,7 +19,7 @@ export const mockEvents: EventItem[] = [
     location: 'หอประชุมใหญ่',
     description: 'งานต้อนรับนักศึกษาใหม่ทุกคณะ',
     photographers: [teamMembers[0], teamMembers[1]],
-    status: 'confirmed',
+    status: 'acknowledged',
     createdAt: '2026-01-20',
   },
   {
