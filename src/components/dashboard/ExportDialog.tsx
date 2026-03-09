@@ -189,10 +189,9 @@ export const ExportDialog = ({
               font-size: 12px;
               font-weight: 500;
             }
-            .status-pending { background: #fef3c7; color: #92400e; }
-            .status-confirmed { background: #d1fae5; color: #065f46; }
-            .status-completed { background: #e5e7eb; color: #374151; }
-            .status-cancelled { background: #fee2e2; color: #991b1b; }
+            .status-acknowledged { background: #fef3c7; color: #92400e; }
+            .status-in_progress { background: #dbeafe; color: #1e40af; }
+            .status-completed { background: #d1fae5; color: #065f46; }
             .footer {
               margin-top: 30px;
               text-align: center;
