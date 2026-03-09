@@ -64,7 +64,7 @@ const Index = () => {
     location: event.location,
     description: event.description,
     photographers: event.photographers || [],
-    status: event.status as 'pending' | 'confirmed' | 'completed' | 'cancelled',
+    status: event.status as 'acknowledged' | 'in_progress' | 'completed',
     createdAt: event.created_at,
     coverImage: event.cover_image_url,
   });

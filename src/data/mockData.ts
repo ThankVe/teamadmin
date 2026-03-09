@@ -88,10 +88,9 @@ export const getEventsByMonth = (events: EventItem[], year: number, month: numbe
 
 export const getEventsStats = (events: EventItem[]) => {
   const total = events.length;
-  const pending = events.filter(e => e.status === 'pending').length;
-  const confirmed = events.filter(e => e.status === 'confirmed').length;
+  const acknowledged = events.filter(e => e.status === 'acknowledged').length;
+  const in_progress = events.filter(e => e.status === 'in_progress').length;
   const completed = events.filter(e => e.status === 'completed').length;
-  const cancelled = events.filter(e => e.status === 'cancelled').length;
   
-  return { total, pending, confirmed, completed, cancelled };
+  return { total, acknowledged, in_progress, completed };
 };
