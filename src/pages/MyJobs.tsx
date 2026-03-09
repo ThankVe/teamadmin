@@ -152,7 +152,7 @@ const MyJobs = () => {
               <div className="flex items-center gap-3">
                 <div className="w-3 h-3 rounded-full bg-blue-500" />
                 <div>
-                  <p className="text-2xl font-bold">{myEvents.filter(e => e.status === 'in_progress' || e.status === 'confirmed').length}</p>
+                  <p className="text-2xl font-bold">{myEvents.filter(e => e.status === 'in_progress').length}</p>
                   <p className="text-xs text-muted-foreground">ดำเนินงาน</p>
                 </div>
               </div>
