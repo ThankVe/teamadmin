@@ -36,20 +36,18 @@ const Dashboard = () => {
 
   const stats = useMemo(() => {
     const total = monthlyEvents.length;
-     const pending = monthlyEvents.filter(e => e.status === 'pending' || e.status === 'acknowledged').length;
-     const confirmed = monthlyEvents.filter(e => e.status === 'confirmed' || e.status === 'in_progress').length;
+    const acknowledged = monthlyEvents.filter(e => e.status === 'acknowledged').length;
+    const in_progress = monthlyEvents.filter(e => e.status === 'in_progress').length;
     const completed = monthlyEvents.filter(e => e.status === 'completed').length;
-    const cancelled = monthlyEvents.filter(e => e.status === 'cancelled').length;
-    return { total, pending, confirmed, completed, cancelled };
+    return { total, acknowledged, in_progress, completed };
   }, [monthlyEvents]);
 
   const allStats = useMemo(() => {
     const total = events.length;
-     const pending = events.filter(e => e.status === 'pending' || e.status === 'acknowledged').length;
-     const confirmed = events.filter(e => e.status === 'confirmed' || e.status === 'in_progress').length;
+    const acknowledged = events.filter(e => e.status === 'acknowledged').length;
+    const in_progress = events.filter(e => e.status === 'in_progress').length;
     const completed = events.filter(e => e.status === 'completed').length;
-    const cancelled = events.filter(e => e.status === 'cancelled').length;
-    return { total, pending, confirmed, completed, cancelled };
+    return { total, acknowledged, in_progress, completed };
   }, [events]);
 
   // Generate monthly chart data for selected year
