@@ -57,7 +57,7 @@ export const mockEvents: EventItem[] = [
     endTime: '14:00',
     location: 'หอประชุมใหญ่',
     photographers: [teamMembers[0], teamMembers[1], teamMembers[2]],
-    status: 'pending',
+    status: 'acknowledged',
     createdAt: '2026-01-28',
   },
   {
