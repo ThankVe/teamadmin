@@ -188,19 +188,6 @@ const TeamDashboard = () => {
               </div>
             </CardContent>
           </Card>
-          <Card className="hover-lift">
-            <CardContent className="p-6 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-amber-500/10 flex items-center justify-center">
-                <Award className="w-6 h-6 text-amber-600" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">รับงานมากที่สุด</p>
-                <p className="text-lg font-bold text-foreground truncate">
-                  {summary.topMember ? `${summary.topMember.name} (${summary.maxJobs})` : '-'}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
         {/* Bar Chart */}
