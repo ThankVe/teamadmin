@@ -320,14 +320,12 @@ const Dashboard = () => {
                       </p>
                     </div>
                     <Badge variant={
-                      event.status === 'confirmed' ? 'default' :
-                      event.status === 'completed' ? 'outline' :
-                      event.status === 'cancelled' ? 'destructive' : 'secondary'
+                      event.status === 'in_progress' ? 'default' :
+                      event.status === 'completed' ? 'outline' : 'secondary'
                     }>
-                      {event.status === 'pending' && 'รอดำเนินการ'}
-                      {event.status === 'confirmed' && 'ยืนยันแล้ว'}
-                      {event.status === 'completed' && 'เสร็จสิ้น'}
-                      {event.status === 'cancelled' && 'ยกเลิก'}
+                      {event.status === 'acknowledged' && 'รับทราบงาน'}
+                      {event.status === 'in_progress' && 'ดำเนินงาน'}
+                      {event.status === 'completed' && 'เสร็จสิ้นงาน'}
                     </Badge>
                   </div>
                 ))}

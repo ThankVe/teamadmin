@@ -12,11 +12,8 @@ import {
 
 const statusConfig: Record<string, { label: string; bgColor: string; textColor: string }> = {
   acknowledged: { label: 'รับทราบงาน', bgColor: 'bg-yellow-500', textColor: 'text-white' },
-  pending: { label: 'รอดำเนินการ', bgColor: 'bg-yellow-500', textColor: 'text-white' },
-  in_progress: { label: 'กำลังดำเนินงาน', bgColor: 'bg-blue-500', textColor: 'text-white' },
-  confirmed: { label: 'ยืนยันแล้ว', bgColor: 'bg-blue-500', textColor: 'text-white' },
+  in_progress: { label: 'ดำเนินงาน', bgColor: 'bg-blue-500', textColor: 'text-white' },
   completed: { label: 'เสร็จสิ้นงาน', bgColor: 'bg-green-500', textColor: 'text-white' },
-  cancelled: { label: 'ยกเลิก', bgColor: 'bg-red-500', textColor: 'text-white' },
 };
 
 const EventDetail = () => {

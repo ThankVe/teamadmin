@@ -69,7 +69,7 @@ const MyJobs = () => {
 
     const upcoming = myEvents.filter(event => {
       const eventDate = new Date(event.date);
-      return eventDate >= now && event.status !== 'completed' && event.status !== 'cancelled';
+      return eventDate >= now && event.status !== 'completed';
     }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
     const past = myEvents.filter(event => {
