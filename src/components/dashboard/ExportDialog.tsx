@@ -218,12 +218,12 @@ export const ExportDialog = ({
               <div class="stat-label">งานทั้งหมด</div>
             </div>
             <div class="stat-card warning">
-              <div class="stat-value">${stats.pending}</div>
-              <div class="stat-label">รอดำเนินการ</div>
+              <div class="stat-value">${stats.acknowledged}</div>
+              <div class="stat-label">รับทราบงาน</div>
             </div>
             <div class="stat-card success">
-              <div class="stat-value">${stats.confirmed}</div>
-              <div class="stat-label">ยืนยันแล้ว</div>
+              <div class="stat-value">${stats.in_progress}</div>
+              <div class="stat-label">ดำเนินงาน</div>
             </div>
             <div class="stat-card muted">
               <div class="stat-value">${stats.completed}</div>
