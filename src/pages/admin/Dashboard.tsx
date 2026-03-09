@@ -277,12 +277,12 @@ const Dashboard = () => {
                 <p className="text-sm text-muted-foreground">งานทั้งหมด</p>
               </div>
               <div className="text-center p-4 rounded-xl bg-amber-500/10">
-                <p className="text-3xl font-bold text-amber-600">{allStats.pending}</p>
-                <p className="text-sm text-muted-foreground">รอดำเนินการ</p>
+                <p className="text-3xl font-bold text-amber-600">{allStats.acknowledged}</p>
+                <p className="text-sm text-muted-foreground">รับทราบงาน</p>
               </div>
-              <div className="text-center p-4 rounded-xl bg-emerald-500/10">
-                <p className="text-3xl font-bold text-emerald-600">{allStats.confirmed}</p>
-                <p className="text-sm text-muted-foreground">ยืนยันแล้ว</p>
+              <div className="text-center p-4 rounded-xl bg-blue-500/10">
+                <p className="text-3xl font-bold text-blue-600">{allStats.in_progress}</p>
+                <p className="text-sm text-muted-foreground">ดำเนินงาน</p>
               </div>
               <div className="text-center p-4 rounded-xl bg-muted">
                 <p className="text-3xl font-bold text-muted-foreground">{allStats.completed}</p>
