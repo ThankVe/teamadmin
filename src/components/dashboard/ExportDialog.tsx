@@ -26,10 +26,9 @@ interface EventData {
 
 interface ExportStats {
   total: number;
-  pending: number;
-  confirmed: number;
+  acknowledged: number;
+  in_progress: number;
   completed: number;
-  cancelled: number;
 }
 
 interface ExportDialogProps {
