@@ -45,7 +45,7 @@ export const mockEvents: EventItem[] = [
     location: 'ห้องประชุม 101',
     description: 'งานประชุมนำเสนอผลงานวิจัย',
     photographers: [teamMembers[1], teamMembers[4]],
-    status: 'confirmed',
+    status: 'in_progress',
     createdAt: '2026-01-25',
   },
   {
